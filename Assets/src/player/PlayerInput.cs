@@ -14,6 +14,8 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (gridMovement.IsMoving()) return;
+        
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) 
             gridMovement.move(Vector3.forward);
         else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) 
