@@ -84,7 +84,10 @@ public class LevelManager : MonoBehaviour
         camara.IniciarSeguimiento(player.transform, blocSize, datoSala.sizeLevel);
 
         if (wallGenerator != null)
+        {
+            wallGenerator.blocSize = blocSize;
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
+        }
 
         actualLevelIndex++;
     }
