@@ -38,6 +38,8 @@ public class WallGenerator : MonoBehaviour
     public Vector3 antorchaRotacionEuler = new Vector3(0f, 90f, 0f);
     [Tooltip("Desplazamiento extra hacia el interior de la sala (eje X) desde la cara interior de la pared.")]
     public float antorchaOffsetInterior = 0f;
+    [Tooltip("Escala aplicada a la antorcha. Útil si el modelo se exportó pequeño.")]
+    public Vector3 antorchaEscala = new Vector3(3f, 3f, 3f);
 
     private List<GameObject> activeWalls = new List<GameObject>();
 
@@ -186,7 +188,26 @@ public class WallGenerator : MonoBehaviour
         {
             Vector3 pos = new Vector3(xMontaje, alturaAntorcha, z * blocSize);
             GameObject ant = Instantiate(antorchaPrefab, pos, rot, transform);
+            ant.transform.localScale = antorchaEscala;
             activeWalls.Add(ant);
+        }
+
+        // Antorchas a los lados de la puerta (muro del fondo)
+        if (puertaArriba != null && puertaAbajo != null)
+        {
+            float zMontaje = (sizeLevel - 0.5f) * blocSize + offset - nativeSize.x - antorchaOffsetInterior;
+            // El muro del fondo apunta a -Z; rotamos 90° más respecto a la antorcha lateral.
+            Quaternion rotFondo = Quaternion.Euler(antorchaRotacionEuler.x, antorchaRotacionEuler.y + 90f, antorchaRotacionEuler.z);
+
+            int[] ladoCells = { puertaCellX - 1, puertaCellX + 1 };
+            foreach (int cellX in ladoCells)
+            {
+                if (cellX < -2 || cellX > 2) continue; // solo dentro del rango del muro
+                Vector3 pos = new Vector3(cellX * blocSize, alturaAntorcha, zMontaje);
+                GameObject ant = Instantiate(antorchaPrefab, pos, rotFondo, transform);
+                ant.transform.localScale = antorchaEscala;
+                activeWalls.Add(ant);
+            }
         }
     }
 
