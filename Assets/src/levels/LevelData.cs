@@ -17,7 +17,9 @@ public class LevelData : ScriptableObject
     public float fallFloorVelocity = 1.0f;
         
     [Header("Spawns")]
-    public int numEnemigos;
+    public int numHerejes;
+    public int numGargolas;
+    public int numBrea;
     public int numCoins;
     public int numTramps;
 
