@@ -16,7 +16,9 @@ public class CreadorDeNiveles : EditorWindow
     private bool floorFall = false;
     private float fallFloorVelocity = 1.0f;
     
-    private int numEnemigos = 0;
+    private int numHerejes;
+    private int numGargolas;
+    private int numBrea;
     private int numCoins = 0;
     private int numTramps = 0;
 
@@ -53,7 +55,9 @@ public class CreadorDeNiveles : EditorWindow
         GUILayout.Space(10);
 
         GUILayout.Label("Spawns", EditorStyles.boldLabel);
-        numEnemigos = EditorGUILayout.IntField("Num Enemigos:", numEnemigos);
+        numHerejes = EditorGUILayout.IntField("Num Herejes:", numHerejes);
+        numGargolas = EditorGUILayout.IntField("Num Gargola:", numGargolas);
+        numBrea = EditorGUILayout.IntField("Num Brea:", numBrea);
         numCoins = EditorGUILayout.IntField("Num Monedas:", numCoins);
         numTramps = EditorGUILayout.IntField("Num Trampas:", numTramps);
 
@@ -89,7 +93,9 @@ public class CreadorDeNiveles : EditorWindow
         nuevoNivel.requieredEnemiesToDoor = requieredEnemiesToDoor;
         nuevoNivel.floorFall = floorFall;
         nuevoNivel.fallFloorVelocity = fallFloorVelocity;
-        nuevoNivel.numEnemigos = numEnemigos;
+        nuevoNivel.numHerejes = numHerejes;
+        nuevoNivel.numGargolas = numGargolas;
+        nuevoNivel.numBrea = numBrea;
         nuevoNivel.numCoins = numCoins;
         nuevoNivel.numTramps = numTramps;
 
