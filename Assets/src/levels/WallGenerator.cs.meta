@@ -3,7 +3,21 @@ guid: 773b59c17c53b1f4487855570db64d3c
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - paredSuelo: {fileID: 919132149155446097, guid: b1b1e0ebe7b6b2a42ba03a4d21f6d1a9,
+      type: 3}
+  - paredArribaA: {fileID: 919132149155446097, guid: f891d5b5c3bc679429a7dae421510bb3,
+      type: 3}
+  - paredArribaB: {fileID: 919132149155446097, guid: b19a1b20522a1e64fa9554a0de631e1a,
+      type: 3}
+  - paredFade: {fileID: 919132149155446097, guid: 32bc19cb067d35c42bf0cf0f171bafe5,
+      type: 3}
+  - puertaArriba: {fileID: 919132149155446097, guid: 6e8b36f7d3a8c004590355c4b6210a41,
+      type: 3}
+  - puertaAbajo: {fileID: 919132149155446097, guid: 3862d550855825a4692f2facd3a1c214,
+      type: 3}
+  - antorchaPrefab: {fileID: 919132149155446097, guid: 4f0068cab4675ac4aa48e1134e58be8c,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

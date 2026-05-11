@@ -6,9 +6,10 @@ MonoImporter:
   defaultReferences:
   - voxelPrefab: {fileID: 205099360209359, guid: d56d2dee42a95564aacd54fa26c63ead,
       type: 3}
-  - player: {fileID: 6374914526960431697, guid: 075ae107dc8129b418a7998c58c4c138,
+  - player: {fileID: 7209849826197733834, guid: 57f0914e895d85342b9ac203365e43f4,
       type: 3}
   - camara: {instanceID: 0}
+  - wallGenerator: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
