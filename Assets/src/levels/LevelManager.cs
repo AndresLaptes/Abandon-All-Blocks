@@ -16,6 +16,7 @@ public class LevelManager : MonoBehaviour
 
     [Header("Referencias Externas")]
     public CameraFramer camara;
+    public WallGenerator wallGenerator;
 
     private LevelData[] nivelesJuego;
     private Queue<GameObject> tilePool = new Queue<GameObject>();
@@ -81,6 +82,12 @@ public class LevelManager : MonoBehaviour
         PosicionarJugador();
 
         camara.IniciarSeguimiento(player.transform, blocSize, datoSala.sizeLevel);
+
+        if (wallGenerator != null)
+        {
+            wallGenerator.blocSize = blocSize;
+            wallGenerator.GenerarParedes(datoSala.sizeLevel);
+        }
 
         actualLevelIndex++;
     }
