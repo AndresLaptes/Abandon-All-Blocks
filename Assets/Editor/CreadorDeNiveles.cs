@@ -72,10 +72,14 @@ public class CreadorDeNiveles : EditorWindow
     private void CrearNivel()
     {
         string rutaBase = "Assets/Resources";
-        if (!AssetDatabase.IsValidFolder(rutaBase)) AssetDatabase.CreateFolder("Assets", "Resources");
+        
+
+        if (!AssetDatabase.IsValidFolder(rutaBase)) 
+            AssetDatabase.CreateFolder("Assets", "Resources");
 
         string rutaCarpeta = $"{rutaBase}/{nombreCarpeta}";
-        if (!AssetDatabase.IsValidFolder(rutaCarpeta)) AssetDatabase.CreateFolder(rutaBase, nombreCarpeta);
+        if (!AssetDatabase.IsValidFolder(rutaCarpeta)) 
+            AssetDatabase.CreateFolder(rutaBase, nombreCarpeta);
 
         string rutaArchivoFisico = $"{rutaCarpeta}/{nombreArchivo}.asset";
         
@@ -87,9 +91,11 @@ public class CreadorDeNiveles : EditorWindow
 
         LevelData nuevoNivel = ScriptableObject.CreateInstance<LevelData>();
         
+
         nuevoNivel.levelName = levelName;
         nuevoNivel.roomNumber = roomNumber;
-        nuevoNivel.sizeLevel = sizeLevel;
+        nuevoNivel.sizeLevel = sizeLevel; 
+
         nuevoNivel.requieredEnemiesToDoor = requieredEnemiesToDoor;
         nuevoNivel.floorFall = floorFall;
         nuevoNivel.fallFloorVelocity = fallFloorVelocity;
@@ -99,12 +105,13 @@ public class CreadorDeNiveles : EditorWindow
         nuevoNivel.numCoins = numCoins;
         nuevoNivel.numTramps = numTramps;
 
+        // Guardamos el asset
         AssetDatabase.CreateAsset(nuevoNivel, rutaArchivoFisico);
         AssetDatabase.SaveAssets();
 
         EditorUtility.FocusProjectWindow();
         Selection.activeObject = nuevoNivel;
 
-        Debug.Log($"¡Nivel {nombreArchivo} creado con éxito y configurado!");
+        Debug.Log($"¡Nivel {nombreArchivo} creado con éxito en {nombreCarpeta}! Matriz de suelo generada por defecto.");
     }
 }

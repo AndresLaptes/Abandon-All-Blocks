@@ -77,7 +77,7 @@ public class LevelManager : MonoBehaviour
         int numCubos = (datoSala.sizeLevel * 5) + 1; 
         EnsurePoolCapacity(numCubos);
         
-        GenerateRoom(datoSala.sizeLevel); 
+        GenerateRoom(datoSala); 
         
         PosicionarJugador();
 
@@ -135,18 +135,26 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    private void GenerateRoom(int length)
+    private void GenerateRoom(LevelData datoSala)
     {
         activeTilesInRoom.Clear();
+
         Vector3 posicionSpawn = new Vector3(0f, 0f, -1f * blocSize);
         SpawnTileFromPool(posicionSpawn);
         
-        for (int z = 0; z < length; z++)
+        if (datoSala.filas != null)
         {
-            for (int x = -2; x <= 2; x++)
+            for (int z = 0; z < datoSala.filas.Length; z++)
             {
-                Vector3 spawnPos = new Vector3(x * blocSize, 0, z * blocSize);
-                SpawnTileFromPool(spawnPos);
+                for (int x = 0; x < 5; x++)
+                {
+                    if (datoSala.filas[z].columnas[x] == 1)
+                    {
+                        float xPos = (x - 2) * blocSize;
+                        Vector3 spawnPos = new Vector3(xPos, 0, z * blocSize);
+                        SpawnTileFromPool(spawnPos);
+                    }
+                }
             }
         }
     }
