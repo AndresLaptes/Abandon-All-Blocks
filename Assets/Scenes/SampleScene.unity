@@ -527,7 +527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   step_size: 1
-  tiempoMovimiento: 0.4
+  tiempoMovimiento: 0.5
 --- !u!1 &2001882477
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,14 +4,23 @@ using UnityEngine;
 public class GridMovement : MonoBehaviour
 {
     [SerializeField] private float step_size = 1f;
-    [SerializeField] private float tiempoMovimiento = 1.3f; 
+    [SerializeField] private float tiempoMovimiento = 0.5f; 
+    
+    [Header("Configuración de Caída")]
+    [SerializeField] private float limiteCaidaY = -5f; 
     
     private bool isMoving = false;
+    private bool isDead = false;
     private Animator anim;
+    
+    // Referencia a nuestro mapa
+    private LevelManager levelManager;
 
     void Start()
     {
         anim = GetComponentInChildren<Animator>(); 
+        // Buscamos el LevelManager automáticamente al empezar
+        levelManager = FindObjectOfType<LevelManager>();
     }
 
     public void ConfigurarPaso(float nuevoPaso)
@@ -21,29 +30,80 @@ public class GridMovement : MonoBehaviour
     
     public void move(Vector3 direction)
     {
-        
-        if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray"))
-        {
-            return;
-        }
+        if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray")) return;
+        if (isDead) return;
 
         if (!isMoving && direction != Vector3.zero)
         {
             transform.rotation = Quaternion.LookRotation(direction);
             
+            Vector3 destino = transform.position + direction * step_size;
+            destino.x = Mathf.Round(destino.x / step_size) * step_size;
+            destino.z = Mathf.Round(destino.z / step_size) * step_size;
             
-            StartCoroutine(MoverSuavemente(direction));
+            if (levelManager != null && levelManager.EsPared(destino))
+            {
+                return; 
+            }
+
+            if (levelManager != null && levelManager.ExisteSueloEn(destino))
+            {
+                StartCoroutine(MoverSuavemente(destino));
+            }
+            else
+            {
+                StartCoroutine(CaerAlVacioParabola(direction));
+            }
         }
     }
 
-    private IEnumerator MoverSuavemente(Vector3 direction)
+    private IEnumerator CaerAlVacioParabola(Vector3 direction)
     {
         isMoving = true;
+        isDead = true; 
 
-        Vector3 destino = transform.position + direction * step_size;
-        destino.x = Mathf.Round(destino.x / step_size) * step_size;
-        destino.z = Mathf.Round(destino.z / step_size) * step_size;
+        if (anim != null) anim.SetBool("Caminando", false);
+        if (anim != null) anim.SetTrigger("Caer");
 
+        Vector3 posicionInicial = transform.position;
+        float velocidadHorizontal = step_size / tiempoMovimiento; 
+        float tiempoPasado = 0f;
+
+        float tiempoTropiezo = 0.09f;
+
+        while (true)
+        {
+           
+            Vector3 posHorizontal = posicionInicial + direction * (velocidadHorizontal * tiempoPasado);
+
+            float caidaY = posicionInicial.y;
+
+            if (tiempoPasado > tiempoTropiezo)
+            {
+                float tiempoGravedad = tiempoPasado - tiempoTropiezo;
+                
+                float fuerzaGravedad = 20f * Mathf.Pow(tiempoGravedad, 2); 
+                caidaY = posicionInicial.y - fuerzaGravedad;
+            }
+
+            if (caidaY <= limiteCaidaY)
+            {
+                transform.position = new Vector3(posHorizontal.x, limiteCaidaY, posHorizontal.z);
+                break;
+            }
+
+            transform.position = new Vector3(posHorizontal.x, caidaY, posHorizontal.z);
+            
+            tiempoPasado += Time.deltaTime;
+            yield return null;
+        }
+
+
+    }
+    
+    private IEnumerator MoverSuavemente(Vector3 destino)
+    {
+        isMoving = true;
         if (anim != null) anim.SetBool("Caminando", true);
 
         Vector3 posicionInicial = transform.position;
@@ -57,14 +117,9 @@ public class GridMovement : MonoBehaviour
         }
 
         transform.position = destino;
-        
         if (anim != null) anim.SetBool("Caminando", false);
-        
         isMoving = false;
     }
     
-    public bool IsMoving() 
-    {
-        return isMoving;
-    }
+    public bool IsMoving() => isMoving;
 }

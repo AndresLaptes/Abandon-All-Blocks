@@ -164,4 +164,58 @@ public class LevelManager : MonoBehaviour
         tile.SetActive(false);
         tilePool.Enqueue(tile);
     }
+    
+    public bool ExisteSueloEn(Vector3 destino)
+    {
+        int gridX = Mathf.RoundToInt(destino.x / blocSize);
+        int gridZ = Mathf.RoundToInt(destino.z / blocSize);
+        int indiceNivel = actualLevelIndex - 1;
+
+       
+        if (indiceNivel >= 0 && indiceNivel < nivelesJuego.Length)
+        {
+            int sizeLevel = nivelesJuego[indiceNivel].sizeLevel;
+            if (gridZ == sizeLevel && wallGenerator != null && gridX == wallGenerator.puertaCellX)
+            {
+                return true; 
+            }
+        }
+
+        foreach (GameObject tile in activeTilesInRoom)
+        {
+            if (Mathf.Abs(tile.transform.position.x - destino.x) < 0.1f &&
+                Mathf.Abs(tile.transform.position.z - destino.z) < 0.1f)
+            {
+                return true;
+            }
+        }
+        return false; 
+    }
+
+    public bool EsPared(Vector3 destino)
+    {
+        int gridX = Mathf.RoundToInt(destino.x / blocSize);
+        int gridZ = Mathf.RoundToInt(destino.z / blocSize);
+
+        int indiceNivel = actualLevelIndex - 1;
+        if (indiceNivel < 0 || indiceNivel >= nivelesJuego.Length) return false;
+
+        int sizeLevel = nivelesJuego[indiceNivel].sizeLevel;
+
+       
+        if (gridX < -2) return true;
+
+       
+        if (gridZ >= sizeLevel)
+        {
+            if (gridZ == sizeLevel && wallGenerator != null && gridX == wallGenerator.puertaCellX)
+            {
+                return false;
+            }
+            return true; 
+        }
+
+        
+        return false;
+    }
 }
