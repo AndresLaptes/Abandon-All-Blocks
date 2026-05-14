@@ -477,8 +477,7 @@ MonoBehaviour:
     type: 3}
   player: {fileID: 1700040685}
   blocSize: 2.5
-  carpetaNiveles: Nivel1
-  nivelInicialParaProbar: 1
+  nivelInicialParaProbar: 3
   camara: {fileID: 330585548}
   wallGenerator: {fileID: 2001882478}
 --- !u!4 &1079592816
@@ -528,6 +527,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   step_size: 1
   tiempoMovimiento: 0.5
+  limiteCaidaY: -5
 --- !u!1 &2001882477
 GameObject:
   m_ObjectHideFlags: 0
