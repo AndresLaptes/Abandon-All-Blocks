@@ -173,11 +173,27 @@ public class LevelManager : MonoBehaviour
     {
         int gridX = Mathf.RoundToInt(destino.x / blocSize);
         int gridZ = Mathf.RoundToInt(destino.z / blocSize);
+        
         int index = actualLevelIndex - 1;
         if (index < 0 || index >= nivelesJuego.Length) return false;
+        
         int size = nivelesJuego[index].sizeLevel;
-        if (gridX < -2 || gridX > 2) return true;
-        if (gridZ >= size) return !(gridZ == size && wallGenerator != null && gridX == wallGenerator.puertaCellX);
+
+        if (gridX < -2 && gridZ >= 0 && gridZ <= size) 
+        {
+            return true;
+        }
+
+    
+        if (gridZ == size && gridX >= -2 && gridX <= 2)
+        {
+            if (wallGenerator != null && gridX == wallGenerator.puertaCellX)
+            {
+                return false;
+            }
+            return true;
+        }
+        
         return false;
     }
 }
