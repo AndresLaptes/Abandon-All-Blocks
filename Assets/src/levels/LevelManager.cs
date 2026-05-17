@@ -16,11 +16,15 @@ public class LevelManager : MonoBehaviour
     [Header("Referencias Externas")]
     public CameraFramer camara;
     public WallGenerator wallGenerator;
+    public EnemySpawner enemySpawner;
 
     private LevelData[] nivelesJuego;
     private Queue<GameObject> tilePool = new Queue<GameObject>();
     private List<GameObject> activeTilesInRoom = new List<GameObject>();
     private int actualLevelIndex = 0;
+
+    private int[,] flowField;
+    private float flowFieldTimer = 0f;
 
     void Awake()
     {
@@ -44,12 +48,23 @@ public class LevelManager : MonoBehaviour
         cargarSigueinteNivel();
     }
 
+    void Update()
+    {
+        if (nivelesJuego == null || nivelesJuego.Length == 0 || player == null) return;
+        
+        flowFieldTimer += Time.deltaTime;
+        if (flowFieldTimer >= 0.15f)
+        {
+            GenerarFloodField();
+            flowFieldTimer = 0f;
+        }
+    }
+
     public void cargarSigueinteNivel()
     {
         if (actualLevelIndex >= nivelesJuego.Length) return;
 
         LevelData datoSala = nivelesJuego[actualLevelIndex];
-        
         string carpetaActual = "Nivel" + (actualLevelIndex + 1);
 
         GameObject nuevoSuelo = Resources.Load<GameObject>($"{carpetaActual}/floor");
@@ -85,7 +100,86 @@ public class LevelManager : MonoBehaviour
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
         }
 
+        if (enemySpawner != null)
+        {
+            enemySpawner.GenerarEnemigos(datoSala, blocSize, this);
+        }
+
         actualLevelIndex++;
+    }
+
+    public void GenerarFloodField()
+    {
+        if (actualLevelIndex < 1) return;
+        
+        LevelData datoSala = nivelesJuego[actualLevelIndex - 1];
+        int columnas = 5;
+        int filas = datoSala.sizeLevel;
+        
+        flowField = new int[columnas, filas];
+        
+        for (int x = 0; x < columnas; x++)
+        {
+            for (int z = 0; z < filas; z++)
+            {
+                flowField[x, z] = 255; 
+            }
+        }
+        
+        int playerGridX = Mathf.RoundToInt(player.transform.position.x / blocSize) + 2;
+        int playerGridZ = Mathf.RoundToInt(player.transform.position.z / blocSize);
+        
+        
+        playerGridX = Mathf.Clamp(playerGridX, 0, columnas - 1);
+        playerGridZ = Mathf.Clamp(playerGridZ, 0, filas - 1);
+        
+        Queue<Vector2Int> cola = new Queue<Vector2Int>();
+        cola.Enqueue(new Vector2Int(playerGridX, playerGridZ));
+        flowField[playerGridX, playerGridZ] = 0; 
+        
+        Vector2Int[] direcciones = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        
+        while (cola.Count > 0)
+        {
+            Vector2Int actual = cola.Dequeue();
+            int costoActual = flowField[actual.x, actual.y];
+            
+            foreach (Vector2Int dir in direcciones)
+            {
+                Vector2Int vecino = actual + dir;
+                
+                if (vecino.x >= 0 && vecino.x < columnas && vecino.y >= 0 && vecino.y < filas)
+                {
+                    Vector3 posMundo = new Vector3((vecino.x - 2) * blocSize, 0f, vecino.y * blocSize);
+                    
+                    if (ExisteSueloEn(posMundo) && !EsPared(posMundo))
+                    {
+                        if (flowField[vecino.x, vecino.y] > costoActual + 1)
+                        {
+                            flowField[vecino.x, vecino.y] = costoActual + 1;
+                            cola.Enqueue(vecino);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public int ObtenerCostoFloodField(Vector3 posicion)
+    {
+        if (flowField == null) return 255;
+        
+        int gridX = Mathf.RoundToInt(posicion.x / blocSize) + 2;
+        int gridZ = Mathf.RoundToInt(posicion.z / blocSize);
+        
+        LevelData datoSala = nivelesJuego[actualLevelIndex - 1];
+        
+        if (gridX >= 0 && gridX < 5 && gridZ >= 0 && gridZ < datoSala.sizeLevel)
+        {
+            return flowField[gridX, gridZ];
+        }
+        
+        return 255;
     }
 
     private void DestruirPoolActual()
@@ -173,27 +267,11 @@ public class LevelManager : MonoBehaviour
     {
         int gridX = Mathf.RoundToInt(destino.x / blocSize);
         int gridZ = Mathf.RoundToInt(destino.z / blocSize);
-        
         int index = actualLevelIndex - 1;
         if (index < 0 || index >= nivelesJuego.Length) return false;
-        
         int size = nivelesJuego[index].sizeLevel;
-
-        if (gridX < -2 && gridZ >= 0 && gridZ <= size) 
-        {
-            return true;
-        }
-
-    
-        if (gridZ == size && gridX >= -2 && gridX <= 2)
-        {
-            if (wallGenerator != null && gridX == wallGenerator.puertaCellX)
-            {
-                return false;
-            }
-            return true;
-        }
-        
+        if (gridX < -2 || gridX > 2) return true;
+        if (gridZ >= size) return !(gridZ == size && wallGenerator != null && gridX == wallGenerator.puertaCellX);
         return false;
     }
 }
