@@ -29,9 +29,9 @@ MonoBehaviour:
   floorFall: 0
   fallFloorVelocity: 1
   requieredEnemiesToDoor: 0
-  numHerejes: 0
-  numGargolas: 0
-  numBrea: 0
+  numHerejes: 2
+  numGargolas: 1
+  numBrea: 3
   numCoins: 0
   numTramps: 0
   allowedEnemyTypes: []
