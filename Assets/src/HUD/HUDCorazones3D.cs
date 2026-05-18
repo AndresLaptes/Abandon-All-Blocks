@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,9 @@ public class HUDCorazones3D : MonoBehaviour
     public float distanciaEntreCorazones = 1.2f;
     public Vector3 escalaCorazones = new Vector3(1f, 1f, 1f);
 
+    [Header("Animación de Daño")]
+    public float tiempoAnimacion = 0.4f;
+
     [Header("Herramientas de Desarrollo")]
     public bool actualizarEnTiempoReal = true;
 
@@ -16,11 +20,7 @@ public class HUDCorazones3D : MonoBehaviour
 
     public void ConstruirHUD(int vidasMaximas)
     {
-        if (prefabCorazon == null)
-        {
-            Debug.LogError("<b>[HUD ERROR]</b> ¡Falta el Prefab del corazón!");
-            return;
-        }
+        if (prefabCorazon == null) return;
 
         foreach (GameObject c in corazonesInstanciados)
         {
@@ -50,9 +50,50 @@ public class HUDCorazones3D : MonoBehaviour
         {
             if (corazonesInstanciados[i] != null)
             {
-                corazonesInstanciados[i].SetActive(i < vidasActuales);
+                if (i >= vidasActuales && corazonesInstanciados[i].activeSelf)
+                {
+                    StartCoroutine(AnimarPerdida(corazonesInstanciados[i], i));
+                }
+                else if (i < vidasActuales && !corazonesInstanciados[i].activeSelf)
+                {
+                    corazonesInstanciados[i].SetActive(true);
+                    Vector3 posicionLocal = posicionInicial + new Vector3(i * distanciaEntreCorazones, 0, 0);
+                    corazonesInstanciados[i].transform.localPosition = posicionLocal;
+                    corazonesInstanciados[i].transform.localScale = escalaCorazones;
+                }
             }
         }
+    }
+
+    private IEnumerator AnimarPerdida(GameObject corazon, int indice)
+    {
+        Vector3 escalaOriginal = escalaCorazones;
+        Vector3 posOriginal = posicionInicial + new Vector3(indice * distanciaEntreCorazones, 0, 0);
+        
+        float mitadTiempo = tiempoAnimacion / 2f;
+        float t = 0;
+
+        while (t < mitadTiempo)
+        {
+            t += Time.deltaTime;
+            float progreso = t / mitadTiempo;
+            corazon.transform.localScale = Vector3.Lerp(escalaOriginal, escalaOriginal * 1.5f, progreso);
+            corazon.transform.localPosition = Vector3.Lerp(posOriginal, posOriginal + new Vector3(0, 1.5f, 0), progreso);
+            yield return null;
+        }
+
+        t = 0;
+
+        while (t < mitadTiempo)
+        {
+            t += Time.deltaTime;
+            float progreso = t / mitadTiempo;
+            corazon.transform.localScale = Vector3.Lerp(escalaOriginal * 1.5f, Vector3.zero, progreso);
+            corazon.transform.localPosition = Vector3.Lerp(posOriginal + new Vector3(0, 1.5f, 0), posOriginal - new Vector3(0, 3f, 0), progreso);
+            yield return null;
+        }
+
+        corazon.SetActive(false);
     }
 
     void Update()
@@ -61,7 +102,7 @@ public class HUDCorazones3D : MonoBehaviour
         {
             for (int i = 0; i < corazonesInstanciados.Count; i++)
             {
-                if (corazonesInstanciados[i] != null)
+                if (corazonesInstanciados[i] != null && corazonesInstanciados[i].activeSelf)
                 {
                     Vector3 posicionLocal = posicionInicial + new Vector3(i * distanciaEntreCorazones, 0, 0);
                     corazonesInstanciados[i].transform.localPosition = posicionLocal;
