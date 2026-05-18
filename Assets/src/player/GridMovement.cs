@@ -27,6 +27,19 @@ public class GridMovement : MonoBehaviour
     {
         step_size = nuevoPaso;
     }
+
+    public void ResetearEstado()
+    {
+        StopAllCoroutines();
+        isMoving = false;
+        isDead = false;
+        if (anim == null) anim = GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("Caminando", false);
+            anim.ResetTrigger("Caer");
+        }
+    }
     
     public void move(Vector3 direction)
     {
@@ -46,7 +59,12 @@ public class GridMovement : MonoBehaviour
                 return; 
             }
 
-            if (levelManager != null && levelManager.ExisteSueloEn(destino))
+            if (levelManager != null && levelManager.EsCeldaPuerta(destino))
+            {
+                levelManager.IniciarAperturaPuerta();
+                StartCoroutine(MoverConRetraso(destino, tiempoMovimiento));
+            }
+            else if (levelManager != null && levelManager.ExisteSueloEn(destino))
             {
                 StartCoroutine(MoverSuavemente(destino));
             }
@@ -101,6 +119,29 @@ public class GridMovement : MonoBehaviour
 
     }
     
+    private IEnumerator MoverConRetraso(Vector3 destino, float retraso)
+    {
+        isMoving = true;
+        float esperado = 0f;
+        while (esperado < retraso)
+        {
+            esperado += Time.deltaTime;
+            yield return null;
+        }
+        if (anim != null) anim.SetBool("Caminando", true);
+        Vector3 posicionInicial = transform.position;
+        float tiempoPasado = 0f;
+        while (tiempoPasado < tiempoMovimiento)
+        {
+            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / tiempoMovimiento);
+            tiempoPasado += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = destino;
+        if (anim != null) anim.SetBool("Caminando", false);
+        isMoving = false;
+    }
+
     private IEnumerator MoverSuavemente(Vector3 destino)
     {
         isMoving = true;
@@ -122,4 +163,5 @@ public class GridMovement : MonoBehaviour
     }
     
     public bool IsMoving() => isMoving;
+    public float TiempoMovimiento => tiempoMovimiento;
 }

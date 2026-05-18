@@ -127,6 +127,7 @@ public class LevelManager : MonoBehaviour
             wallGenerator.blocSize = blocSize;
             wallGenerator.fadeColorFondo = datoSala.colorFondo;
             wallGenerator.fadeTint = datoSala.fadeTint;
+            wallGenerator.paredesApiladas = datoSala.paredesApiladas;
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
         }
 
@@ -223,14 +224,15 @@ public class LevelManager : MonoBehaviour
     public void PosicionarJugador()
     {
         if (activeTilesInRoom.Count == 0) return;
+        GridMovement mov = player.GetComponent<GridMovement>();
+        if (mov != null) mov.ResetearEstado();
         GameObject losaSpawn = activeTilesInRoom[0];
         Renderer rendererLosa = losaSpawn.GetComponentInChildren<Renderer>();
         float techoDelSuelo = rendererLosa.bounds.max.y;
-        float mitadAlturaJugador = 0.5f; 
+        float mitadAlturaJugador = 0.5f;
         Renderer rendererJugador = player.GetComponentInChildren<Renderer>();
         if (rendererJugador != null) mitadAlturaJugador = rendererJugador.bounds.size.y / 2f;
         player.transform.position = new Vector3(0f, techoDelSuelo + mitadAlturaJugador, -1f * blocSize);
-        GridMovement mov = player.GetComponent<GridMovement>();
         if (mov != null) mov.ConfigurarPaso(blocSize);
     }
 
@@ -328,6 +330,22 @@ public class LevelManager : MonoBehaviour
         foreach (GameObject tile in activeTilesInRoom)
             if (Mathf.Abs(tile.transform.position.x - destino.x) < 0.1f && Mathf.Abs(tile.transform.position.z - destino.z) < 0.1f) return true;
         return false;
+    }
+
+    public bool EsCeldaPuerta(Vector3 destino)
+    {
+        if (wallGenerator == null) return false;
+        int index = actualLevelIndex - 1;
+        if (index < 0 || index >= nivelesJuego.Length) return false;
+        int gridX = Mathf.RoundToInt(destino.x / blocSize);
+        int gridZ = Mathf.RoundToInt(destino.z / blocSize);
+        return gridZ == nivelesJuego[index].sizeLevel && gridX == wallGenerator.puertaCellX;
+    }
+
+    public void IniciarAperturaPuerta()
+    {
+        if (wallGenerator != null && wallGenerator.doorActual != null)
+            wallGenerator.doorActual.IniciarApertura();
     }
 
     public bool EsPared(Vector3 destino)

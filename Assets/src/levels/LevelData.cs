@@ -47,6 +47,10 @@ public class LevelData : ScriptableObject
     public bool floorFall;
     public float fallFloorVelocity;
 
+    [Header("Paredes")]
+    [Tooltip("Si está activo: fila 1 sobre paredBase = toda paredDecoA, fila 2 = toda paredDecoB. Ignora filasArriba/probabilidadDecoracion del WallGenerator.")]
+    public bool paredesApiladas;
+
     [Header("Dificultad")]
     public int requieredEnemiesToDoor;
 

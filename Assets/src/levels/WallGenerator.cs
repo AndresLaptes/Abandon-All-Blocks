@@ -10,9 +10,11 @@ public class WallGenerator : MonoBehaviour
     public GameObject paredFade;      
 
     [Header("Puerta")]
-    public GameObject puertaArriba;   
-    public GameObject puertaAbajo;    
+    public GameObject puertaArriba;
+    public GameObject puertaAbajo;
+    public GameObject puerta;
     [Range(-2, 2)] public int puertaCellX = 0;
+    public Vector3 puertaPanelOffset = Vector3.zero;
 
     [Header("Configuración")]
     public float blocSize = 2f;
@@ -37,13 +39,24 @@ public class WallGenerator : MonoBehaviour
 
     [HideInInspector] public Color fadeColorFondo = Color.black;
     [HideInInspector] public Color fadeTint = new Color(0.6f, 0.6f, 0.6f, 1f);
+    [HideInInspector] public bool paredesApiladas = false;
 
     private List<GameObject> activeWalls = new List<GameObject>();
     private Vector3 nativeSize = Vector3.one;
+    private Vector3 nativeCenter = Vector3.zero;
     private bool nativeSizeCached = false;
     private Material fadeMatActual;
     private Material antorchaMatActual;
     private MaterialPropertyBlock fadeMPB;
+    private GameObject panelActual;
+    private Vector3 panelBasePos;
+    [HideInInspector] public Door doorActual;
+
+    void Update()
+    {
+        if (panelActual != null)
+            panelActual.transform.position = panelBasePos + puertaPanelOffset;
+    }
 
     public void CargarAssetsDesdeCarpeta(string nombreCarpeta)
     {
@@ -54,6 +67,7 @@ public class WallGenerator : MonoBehaviour
         
         puertaArriba = Resources.Load<GameObject>($"{nombreCarpeta}/puertaArriba") ?? Resources.Load<GameObject>($"{nombreCarpeta}/puerta1_1");
         puertaAbajo = Resources.Load<GameObject>($"{nombreCarpeta}/puertaAbajo") ?? Resources.Load<GameObject>($"{nombreCarpeta}/puerta1_2");
+        puerta = Resources.Load<GameObject>($"{nombreCarpeta}/puerta");
         
         antorchaPrefab = Resources.Load<GameObject>($"{nombreCarpeta}/antorcha");
 
@@ -79,25 +93,26 @@ public class WallGenerator : MonoBehaviour
         else scale.x = (blocSize / nativeSize.x) * solapePared;
 
         Quaternion rotFrontal = Quaternion.Euler(0f, 90f, 0f);
-        float floorTopY = blocSize / 2f;
-        float floorBottomY = -blocSize / 2f;
+        float floorTopY = paredesApiladas ? blocSize : blocSize / 2f;
+        float pivotYAdjust = paredesApiladas ? 0f : 0.5f;
 
         bool generarPuerta = (puertaArriba != null && puertaAbajo != null);
 
-        int totalArriba = 1 + filasArriba;
+        int totalArriba = paredesApiladas ? 3 : (1 + filasArriba);
         for (int i = 0; i < totalArriba; i++)
         {
-            float wallCenterY = floorTopY + (i + 0.5f) * nativeSize.y;
+            float wallCenterY = floorTopY + (i + pivotYAdjust) * nativeSize.y;
             bool esBase = (i == 0);
             int skipBackX = (generarPuerta && (i == 0 || i == 1)) ? puertaCellX : int.MinValue;
-            GenerarFila(sizeLevel, wallCenterY, scale, rotFrontal, esBase, false, skipBackX);
+            GenerarFila(sizeLevel, wallCenterY, scale, rotFrontal, esBase, false, skipBackX, i);
         }
 
-        GenerarFila(sizeLevel, 0f, scale, rotFrontal, false, true);
+        float fadeTopRowCenterY = floorTopY - (1f - pivotYAdjust) * nativeSize.y;
+        GenerarFila(sizeLevel, fadeTopRowCenterY, scale, rotFrontal, false, true);
 
         for (int i = 0; i < filasAbajo; i++)
         {
-            float wallCenterY = floorBottomY - (i + 0.5f) * nativeSize.y;
+            float wallCenterY = fadeTopRowCenterY - (i + 1) * nativeSize.y;
             GenerarFila(sizeLevel, wallCenterY, scale, rotFrontal, false, true);
         }
 
@@ -105,46 +120,80 @@ public class WallGenerator : MonoBehaviour
         SpawnAntorchas(sizeLevel);
     }
 
-    private void GenerarFila(int sizeLevel, float wallCenterY, Vector3 scale, Quaternion rotFrontal, bool esBase, bool esFade, int skipBackX = int.MinValue)
+    private void GenerarFila(int sizeLevel, float wallCenterY, Vector3 scale, Quaternion rotFrontal, bool esBase, bool esFade, int skipBackX = int.MinValue, int filaIndex = -1)
     {
         float offset = nativeSize.x / 2f;
         for (int z = 0; z < sizeLevel; z++)
-            SpawnWall(ElegirPrefab(esBase, esFade), new Vector3(-2.5f * blocSize - offset, wallCenterY, z * blocSize), Quaternion.identity, scale);
+            SpawnWall(ElegirPrefab(esBase, esFade, filaIndex), new Vector3(-2.5f * blocSize - offset, wallCenterY, z * blocSize), Quaternion.identity, scale);
         for (int x = -2; x <= 2; x++)
         {
             if (x == skipBackX) continue;
-            SpawnWall(ElegirPrefab(esBase, esFade), new Vector3(x * blocSize, wallCenterY, (sizeLevel - 0.5f) * blocSize + offset), rotFrontal, scale);
+            SpawnWall(ElegirPrefab(esBase, esFade, filaIndex), new Vector3(x * blocSize, wallCenterY, (sizeLevel - 0.5f) * blocSize + offset), rotFrontal, scale);
         }
         Vector3 cornerScale = new Vector3(1f, 1f, (offset * 2f) / nativeSize.z);
         Vector3 cornerPos = new Vector3(-2.5f * blocSize - offset, wallCenterY, (sizeLevel - 0.5f) * blocSize + offset);
-        GameObject prefabEsquina = esFade ? (paredFade != null ? paredFade : paredSuelo) : paredSuelo;
+        GameObject prefabEsquina = esFade ? (paredFade != null ? paredFade : paredSuelo) : ElegirPrefab(esBase, esFade, filaIndex);
         SpawnWall(prefabEsquina, cornerPos, Quaternion.identity, cornerScale);
     }
 
     private void SpawnPuerta(int sizeLevel, Vector3 scale)
     {
         float offset = nativeSize.x / 2f;
-        float floorTopY = blocSize / 2f;
+        float floorTopY = paredesApiladas ? blocSize : blocSize / 2f;
+        float pivotYAdjust = paredesApiladas ? 0f : 0.5f;
         float xPos = puertaCellX * blocSize;
         float zPos = (sizeLevel - 0.5f) * blocSize + offset;
         GameObject doorRoot = new GameObject("Door");
         doorRoot.transform.SetParent(transform);
         doorRoot.transform.position = new Vector3(xPos, 0f, zPos);
         Quaternion rotFrontal = Quaternion.Euler(0f, 90f, 0f);
-        float yAbajo = floorTopY + 0.5f * nativeSize.y;
+        float yAbajo = floorTopY + pivotYAdjust * nativeSize.y;
         GameObject abajo = Instantiate(puertaAbajo, new Vector3(xPos, yAbajo, zPos), rotFrontal, doorRoot.transform);
         abajo.transform.localScale = scale;
-        float yArriba = floorTopY + 1.5f * nativeSize.y;
+        float yArriba = floorTopY + (1f + pivotYAdjust) * nativeSize.y;
         GameObject arriba = Instantiate(puertaArriba, new Vector3(xPos, yArriba, zPos), rotFrontal, doorRoot.transform);
         arriba.transform.localScale = scale;
-        doorRoot.AddComponent<Door>();
+        GameObject panel = null;
+        GameObject pivote = null;
+        if (puerta != null)
+        {
+            pivote = new GameObject("PanelHinge");
+            pivote.transform.SetParent(doorRoot.transform);
+            pivote.transform.localRotation = Quaternion.identity;
+            pivote.transform.position = Vector3.zero;
+
+            panel = Instantiate(puerta, pivote.transform);
+            panel.name = "PanelPuerta";
+            panel.transform.localPosition = Vector3.zero;
+            panel.transform.localRotation = rotFrontal;
+            panel.transform.localScale = scale;
+
+            Renderer rPanel = panel.GetComponentInChildren<Renderer>();
+            float halfWidth = (rPanel != null) ? rPanel.bounds.size.x / 2f : blocSize / 2f;
+
+            panelBasePos = new Vector3(xPos + halfWidth, yAbajo, zPos);
+            pivote.transform.position = panelBasePos + puertaPanelOffset;
+            panel.transform.localPosition = new Vector3(-halfWidth, 0f, 0f);
+
+            panelActual = pivote;
+        }
+        Door doorComp = doorRoot.AddComponent<Door>();
+        doorComp.Configurar(blocSize, puertaCellX, sizeLevel);
+        doorComp.panel = pivote;
+        doorActual = doorComp;
         activeWalls.Add(doorRoot);
     }
 
-    private GameObject ElegirPrefab(bool esBase, bool esFade)
+    private GameObject ElegirPrefab(bool esBase, bool esFade, int filaIndex = -1)
     {
         if (esFade) return paredFade != null ? paredFade : paredSuelo;
         if (esBase) return paredSuelo;
+        if (paredesApiladas)
+        {
+            if (filaIndex == 1 && paredArribaA != null) return paredArribaA;
+            if (filaIndex == 2 && paredArribaB != null) return paredArribaB;
+            return paredSuelo;
+        }
         if (Random.value < probabilidadDecoracion && (paredArribaA != null || paredArribaB != null))
         {
             if (paredArribaA != null && paredArribaB != null) return Random.value < 0.5f ? paredArribaA : paredArribaB;
@@ -184,22 +233,25 @@ public class WallGenerator : MonoBehaviour
     {
         foreach (GameObject wall in activeWalls) if (wall != null) Destroy(wall);
         activeWalls.Clear();
+        panelActual = null;
+        doorActual = null;
     }
 
     private void CacheNativeSize()
     {
         if (nativeSizeCached) return;
         GameObject reference = paredSuelo != null ? paredSuelo : paredFade;
-        if (reference == null) { nativeSize = Vector3.one; nativeSizeCached = true; return; }
-        GameObject temp = Instantiate(reference);
+        if (reference == null) { nativeSize = Vector3.one; nativeCenter = Vector3.zero; nativeSizeCached = true; return; }
+        GameObject temp = Instantiate(reference, Vector3.zero, Quaternion.identity);
         Renderer[] renderers = temp.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
         {
             Bounds b = renderers[0].bounds;
             foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
             nativeSize = b.size;
+            nativeCenter = b.center;
         }
-        else nativeSize = Vector3.one;
+        else { nativeSize = Vector3.one; nativeCenter = Vector3.zero; }
         Destroy(temp);
         nativeSizeCached = true;
     }
@@ -207,7 +259,14 @@ public class WallGenerator : MonoBehaviour
     private void SpawnWall(GameObject prefab, Vector3 position, Quaternion rotation, Vector3 scale)
     {
         if (prefab == null) return;
-        GameObject wall = Instantiate(prefab, position, rotation, transform);
+        Vector3 spawnPos = position;
+        if (paredesApiladas)
+        {
+            Vector3 nativeCenterXZ = new Vector3(nativeCenter.x, 0f, nativeCenter.z);
+            Vector3 pivotComp = rotation * Vector3.Scale(nativeCenterXZ, scale);
+            spawnPos = position - pivotComp;
+        }
+        GameObject wall = Instantiate(prefab, spawnPos, rotation, transform);
         wall.transform.localScale = scale;
         if (prefab == paredFade)
         {
