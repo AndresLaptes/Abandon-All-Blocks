@@ -8,6 +8,13 @@ public class EnemyController : MonoBehaviour
     public float tiempoEsperaMinimo = 0.5f;
     public float tiempoEsperaMaximo = 1.5f;
 
+    [Header("Configuración de Ataque")]
+    [Tooltip("Distancia que retrocede para tomar impulso")]
+    public float distanciaRetroceso = 0.5f; 
+    public float tiempoAnticipacion = 0.4f; // Cuánto tarda en cargar hacia atrás
+    public float tiempoDash = 0.1f;         // Velocidad del golpe
+    public float tiempoRecuperacion = 0.2f; // Cuánto tarda en volver a su casilla original
+
     [Header("Herramientas")]
     public bool modoDebug = false;
 
@@ -17,6 +24,7 @@ public class EnemyController : MonoBehaviour
     private EnemySpawner spawner;
 
     private bool isMoving = false;
+    private bool isAttacking = false;
 
     public void Inicializar(float tamanoBloque, LevelManager manager, Transform jugador, EnemySpawner spawnerRef)
     {
@@ -37,16 +45,92 @@ public class EnemyController : MonoBehaviour
             float tiempoEspera = Random.Range(tiempoEsperaMinimo, tiempoEsperaMaximo);
             yield return new WaitForSeconds(tiempoEspera);
 
-            if (!isMoving && player != null)
+            if (!isMoving && !isAttacking && player != null)
             {
-                Vector3 mejorCasilla = CalcularMejorCasilla();
+                // Aplanamos las posiciones (ignorando la Y) para calcular la distancia en cuadrícula
+                Vector3 miPosPlana = new Vector3(transform.position.x, 0, transform.position.z);
+                Vector3 playerPosPlana = new Vector3(player.position.x, 0, player.position.z);
                 
-                if (Vector3.Distance(transform.position, mejorCasilla) > 0.1f)
+                // Si el jugador está justo en la casilla de al lado (aprox 1 bloque de distancia)
+                if (Vector3.Distance(miPosPlana, playerPosPlana) < (blocSize * 1.2f))
                 {
-                    yield return StartCoroutine(MoverA(mejorCasilla));
+                    // ¡INICIAR SECUENCIA DE ATAQUE!
+                    yield return StartCoroutine(RealizarAtaque(player.position));
+                }
+                else
+                {
+                    // Si el jugador está lejos, pensar cómo acercarse
+                    Vector3 mejorCasilla = CalcularMejorCasilla();
+                    
+                    if (Vector3.Distance(transform.position, mejorCasilla) > 0.1f)
+                    {
+                        yield return StartCoroutine(MoverA(mejorCasilla));
+                    }
                 }
             }
         }
+    }
+
+    private IEnumerator RealizarAtaque(Vector3 posJugadorDestino)
+    {
+        isAttacking = true;
+
+        Vector3 posInicial = transform.position;
+        Vector3 direccionAtaque = (posJugadorDestino - posInicial).normalized;
+        direccionAtaque.y = 0; // Evitamos que mire hacia el cielo o el suelo
+
+        // Mirar fijamente al jugador antes de atacar
+        if (direccionAtaque != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(direccionAtaque);
+        }
+
+        // --- 1. WIND-UP (Anticipación visual) ---
+        // Se echa un poco hacia atrás para "tomar impulso"
+        Vector3 posRetroceso = posInicial - (direccionAtaque * distanciaRetroceso);
+        float t = 0;
+        while (t < tiempoAnticipacion)
+        {
+            t += Time.deltaTime;
+            transform.position = Vector3.Lerp(posInicial, posRetroceso, t / tiempoAnticipacion);
+            yield return null;
+        }
+
+        // --- 2. DASH (El golpe) ---
+        // Avanza rapidísimo hacia adelante
+        Vector3 posImpacto = posInicial + (direccionAtaque * (blocSize * 0.8f)); // 0.8f para no fusionarse en el centro del jugador
+        t = 0;
+        while (t < tiempoDash)
+        {
+            t += Time.deltaTime;
+            transform.position = Vector3.Lerp(posRetroceso, posImpacto, t / tiempoDash);
+            yield return null;
+        }
+
+        // --- 3. TRIGGER DEL DAÑO ---
+        // Al terminar el Dash, comprobamos si el jugador sigue cerca.
+        // Si el jugador se ha movido rápido y la esquivó, ¡el ataque fallará! (Gran jugabilidad)
+        Vector3 posPlanaImpacto = new Vector3(transform.position.x, 0, transform.position.z);
+        Vector3 posPlanaJugador = new Vector3(player.position.x, 0, player.position.z);
+
+        if (Vector3.Distance(posPlanaImpacto, posPlanaJugador) < (blocSize * 1.1f))
+        {
+            PlayerHealth salud = player.GetComponent<PlayerHealth>();
+            if (salud != null) salud.RecibirDano();
+        }
+
+        // --- 4. RECUPERACIÓN ---
+        // El enemigo rebota/vuelve a su casilla original
+        t = 0;
+        while (t < tiempoRecuperacion)
+        {
+            t += Time.deltaTime;
+            transform.position = Vector3.Lerp(posImpacto, posInicial, t / tiempoRecuperacion);
+            yield return null;
+        }
+
+        transform.position = posInicial;
+        isAttacking = false;
     }
 
     private Vector3 CalcularMejorCasilla()
@@ -66,16 +150,9 @@ public class EnemyController : MonoBehaviour
 
             int costoFloodField = levelManager.ObtenerCostoFloodField(destinoPrueba);
             
-            if (costoFloodField == 255)
-            {
-                continue;
-            }
-
-            if (spawner.HayEnemigoEn(destinoPrueba, this.gameObject))
-            {
-                continue;
-            }
-
+            if (costoFloodField == 255) continue;
+            if (spawner.HayEnemigoEn(destinoPrueba, this.gameObject)) continue;
+            
             if (Mathf.Abs(player.position.x - destinoPrueba.x) < 0.1f && Mathf.Abs(player.position.z - destinoPrueba.z) < 0.1f)
             {
                 continue;
