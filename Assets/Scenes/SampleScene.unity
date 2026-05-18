@@ -479,22 +479,12 @@ MonoBehaviour:
   player: {fileID: 1700040685}
   blocSize: 2.5
   nivelInicialParaProbar: 1
+  prefabMoneda: {fileID: 148711598779066864, guid: ca975475be2642b4e99ee61880d3d635,
+    type: 3}
+  offsetAlturaMonedas: 2.75
   camara: {fileID: 330585548}
   wallGenerator: {fileID: 2001882478}
   enemySpawner: {fileID: 1449845798}
-  decoraciones:
-  - prefab: {fileID: 919132149155446097, guid: a7643357effe8ec4891e66bfd7d70c5c, type: 3}
-    escala: {x: 3, y: 3, z: 3}
-    rotacion: {x: 0, y: 180, z: 0}
-    offset: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: 0c3a667ff8e0f5f44a1d1a7aa7eaaa1a, type: 3}
-    escala: {x: 2.5, y: 2.5, z: 2.5}
-    rotacion: {x: 0, y: 230, z: 0}
-    offset: {x: 0, y: 0, z: 0}
-  - prefab: {fileID: 919132149155446097, guid: 0a9e9b3ec504f764d9e5bff38eec4aa2, type: 3}
-    escala: {x: 2.5, y: 2.5, z: 2.5}
-    rotacion: {x: 0, y: 180, z: 0}
-    offset: {x: 0.5, y: 0, z: 0}
 --- !u!4 &1079592816
 Transform:
   m_ObjectHideFlags: 0
@@ -708,6 +698,7 @@ MonoBehaviour:
   posicionInicial: {x: -7.5, y: 3.5, z: 5}
   distanciaEntreCorazones: 1.5
   escalaCorazones: {x: 0.5, y: 0.5, z: 0.5}
+  tiempoAnimacion: 0.4
   actualizarEnTiempoReal: 1
 --- !u!1 &1700040685 stripped
 GameObject:
@@ -857,6 +848,10 @@ MonoBehaviour:
   antorchaRotacionEuler: {x: 0, y: 90, z: 0}
   antorchaOffsetInterior: 0
   antorchaEscala: {x: 3, y: 3, z: 3}
+  fadeTopY: 1
+  fadeBottomY: -5
+  fadeColorFondo: {r: 0, g: 0, b: 0, a: 1}
+  fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
 --- !u!4 &2001882479
 Transform:
   m_ObjectHideFlags: 0

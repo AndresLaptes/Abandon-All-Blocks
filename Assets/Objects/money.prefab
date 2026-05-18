@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2187680784321974926
+--- !u!1001 &1067702449952380065
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -16,7 +16,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 115d291f0ebf389428d617e20652faf5,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.39
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 115d291f0ebf389428d617e20652faf5,
         type: 3}
@@ -66,5 +66,57 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 115d291f0ebf389428d617e20652faf5,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9132229346071972181}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 115d291f0ebf389428d617e20652faf5,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1562342222658924708}
   m_SourcePrefab: {fileID: 100100000, guid: 115d291f0ebf389428d617e20652faf5, type: 3}
+--- !u!1 &148711598779066864 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 115d291f0ebf389428d617e20652faf5,
+    type: 3}
+  m_PrefabInstance: {fileID: 1067702449952380065}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &9132229346071972181
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148711598779066864}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.59561634, y: 0.6635442, z: 0.13780865}
+  m_Center: {x: 0.020548224, y: 0.34251344, z: 0.002870854}
+--- !u!114 &1562342222658924708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148711598779066864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11e7887e9afddfc4285ec63a181d6841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocidadRotacion: 90
+  alturaFlote: 0.2
+  velocidadFlote: 3
+  alturaRecogida: 1.5
+  tiempoAnimacionRecogida: 0.3
