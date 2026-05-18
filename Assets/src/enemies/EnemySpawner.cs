@@ -107,8 +107,18 @@ public class EnemySpawner : MonoBehaviour
 
                 GameObject instanciaEnemigo = Instantiate(prefab, posicionInicial, rotacionAleatoria, this.transform);
 
+                Renderer[] rs = instanciaEnemigo.GetComponentsInChildren<Renderer>();
+                if (rs.Length > 0)
+                {
+                    Bounds b = rs[0].bounds;
+                    foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+                    float topeSuelo = blocSize / 2f;
+                    float deltaY = topeSuelo - b.min.y + offsetAltura;
+                    instanciaEnemigo.transform.position += new Vector3(0f, deltaY, 0f);
+                }
+
                 enemigosActivos.Add(instanciaEnemigo);
-                
+
                 EnemyController cerebro = instanciaEnemigo.GetComponent<EnemyController>();
                 if (cerebro != null) cerebro.Inicializar(blocSize, manager, manager.player.transform, this);
             }
