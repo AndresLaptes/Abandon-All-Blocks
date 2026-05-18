@@ -1,7 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
 using UnityEngine;
+
+[System.Serializable]
+public class DecoracionEntry
+{
+    public GameObject prefab;
+    public Vector3 escala = new Vector3(3f, 3f, 3f);
+    public Vector3 rotacion = new Vector3(0f, 180f, 0f);
+    [Tooltip("Ajuste fino sobre la posición auto-calculada (base del modelo apoyada en el suelo).")]
+    public Vector3 offset = Vector3.zero;
+}
 
 public class LevelManager : MonoBehaviour
 {
@@ -18,9 +28,14 @@ public class LevelManager : MonoBehaviour
     public WallGenerator wallGenerator;
     public EnemySpawner enemySpawner;
 
+    [Header("Decoraciones / Obstáculos")]
+    [Tooltip("Índice 0 -> valor 2 en la matriz, índice 1 -> valor 3, etc. Cada entrada lleva su propia escala y rotación.")]
+    public DecoracionEntry[] decoraciones;
+
     private LevelData[] nivelesJuego;
     private Queue<GameObject> tilePool = new Queue<GameObject>();
     private List<GameObject> activeTilesInRoom = new List<GameObject>();
+    private List<GameObject> activeDecorationsInRoom = new List<GameObject>();
     private int actualLevelIndex = 0;
 
     private int[,] flowField;
@@ -33,7 +48,7 @@ public class LevelManager : MonoBehaviour
         while (true)
         {
             LevelData[] nivelesEnCarpeta = Resources.LoadAll<LevelData>("Nivel" + i);
-            if (nivelesEnCarpeta.Length == 0) break; 
+            if (nivelesEnCarpeta.Length == 0) break;
             listaNiveles.AddRange(nivelesEnCarpeta);
             i++;
         }
@@ -41,6 +56,15 @@ public class LevelManager : MonoBehaviour
 
         actualLevelIndex = nivelInicialParaProbar - 1;
         if (actualLevelIndex < 0) actualLevelIndex = 0;
+
+        if (decoraciones == null || decoraciones.Length == 0)
+        {
+            decoraciones = Resources.LoadAll<GameObject>("Objects")
+                .OrderBy(o => o.name)
+                .Select(o => new DecoracionEntry { prefab = o })
+                .ToArray();
+            Debug.Log($"LevelManager: {decoraciones.Length} decoraciones auto-cargadas desde Resources/Objects/ -> [{string.Join(", ", decoraciones.Select(e => e.prefab.name))}]");
+        }
     }
 
     void Start()
@@ -86,6 +110,9 @@ public class LevelManager : MonoBehaviour
         }
         activeTilesInRoom.Clear();
 
+        foreach (GameObject deco in activeDecorationsInRoom) if (deco != null) Destroy(deco);
+        activeDecorationsInRoom.Clear();
+
         int numCubos = (datoSala.sizeLevel * 5) + 1; 
         EnsurePoolCapacity(numCubos);
         
@@ -93,10 +120,13 @@ public class LevelManager : MonoBehaviour
         PosicionarJugador();
 
         camara.IniciarSeguimiento(player.transform, blocSize, datoSala.sizeLevel);
+        camara.SetFondo(datoSala.colorFondo);
 
         if (wallGenerator != null)
         {
             wallGenerator.blocSize = blocSize;
+            wallGenerator.fadeColorFondo = datoSala.colorFondo;
+            wallGenerator.fadeTint = datoSala.fadeTint;
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
         }
 
@@ -231,20 +261,57 @@ public class LevelManager : MonoBehaviour
             {
                 for (int x = 0; x < 5; x++)
                 {
-                    if (datoSala.filas[z].columnas[x] == 1)
-                        SpawnTileFromPool(new Vector3((x - 2) * blocSize, 0, z * blocSize));
+                    int valor = datoSala.filas[z].columnas[x];
+                    if (valor < 1) continue;
+                    Vector3 pos = new Vector3((x - 2) * blocSize, 0, z * blocSize);
+                    GameObject tile = SpawnTileFromPool(pos);
+                    if (valor >= 2 && tile != null) SpawnDecoracion(valor - 2, tile);
                 }
             }
         }
     }
 
-    private void SpawnTileFromPool(Vector3 position)
+    private GameObject SpawnTileFromPool(Vector3 position)
     {
-        if (tilePool.Count == 0) return;
+        if (tilePool.Count == 0) return null;
         GameObject tileObj = tilePool.Dequeue();
         tileObj.transform.position = position;
         tileObj.SetActive(true);
         activeTilesInRoom.Add(tileObj);
+        return tileObj;
+    }
+
+    private void SpawnDecoracion(int prefabIndex, GameObject tileObj)
+    {
+        if (decoraciones == null || prefabIndex < 0 || prefabIndex >= decoraciones.Length)
+        {
+            Debug.LogWarning($"LevelManager: valor de decoración {prefabIndex + 2} sin entrada asignada (array tiene {(decoraciones == null ? 0 : decoraciones.Length)} elementos).");
+            return;
+        }
+        DecoracionEntry entry = decoraciones[prefabIndex];
+        if (entry == null || entry.prefab == null)
+        {
+            Debug.LogWarning($"LevelManager: el slot {prefabIndex} de decoraciones está vacío.");
+            return;
+        }
+
+        Renderer rTile = tileObj.GetComponentInChildren<Renderer>();
+        float topY = rTile != null ? rTile.bounds.max.y : tileObj.transform.position.y + blocSize / 2f;
+
+        Vector3 spawnXZ = new Vector3(tileObj.transform.position.x + entry.offset.x, topY, tileObj.transform.position.z + entry.offset.z);
+        GameObject deco = Instantiate(entry.prefab, spawnXZ, Quaternion.Euler(entry.rotacion), transform);
+        deco.transform.localScale = Vector3.Scale(deco.transform.localScale, entry.escala);
+
+        Renderer[] decoRenderers = deco.GetComponentsInChildren<Renderer>();
+        if (decoRenderers.Length > 0)
+        {
+            Bounds b = decoRenderers[0].bounds;
+            foreach (Renderer r in decoRenderers) b.Encapsulate(r.bounds);
+            float deltaY = topY - b.min.y + entry.offset.y;
+            deco.transform.position += new Vector3(0f, deltaY, 0f);
+        }
+
+        activeDecorationsInRoom.Add(deco);
     }
 
     public void ReturnTileToPool(GameObject tile) { tile.SetActive(false); tilePool.Enqueue(tile); }
