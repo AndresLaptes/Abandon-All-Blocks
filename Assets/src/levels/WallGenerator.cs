@@ -29,9 +29,21 @@ public class WallGenerator : MonoBehaviour
     public float antorchaOffsetInterior = 0f;
     public Vector3 antorchaEscala = new Vector3(3f, 3f, 3f);
 
+    [Header("Fade de paredes")]
+    [Tooltip("World Y por encima de cual la pared se ve con textura completa.")]
+    public float fadeTopY = 1f;
+    [Tooltip("World Y por debajo de cual la pared está 100% disuelta en colorFondo.")]
+    public float fadeBottomY = -5f;
+
+    [HideInInspector] public Color fadeColorFondo = Color.black;
+    [HideInInspector] public Color fadeTint = new Color(0.6f, 0.6f, 0.6f, 1f);
+
     private List<GameObject> activeWalls = new List<GameObject>();
     private Vector3 nativeSize = Vector3.one;
     private bool nativeSizeCached = false;
+    private Material fadeMatActual;
+    private Material antorchaMatActual;
+    private MaterialPropertyBlock fadeMPB;
 
     public void CargarAssetsDesdeCarpeta(string nombreCarpeta)
     {
@@ -45,8 +57,13 @@ public class WallGenerator : MonoBehaviour
         
         antorchaPrefab = Resources.Load<GameObject>($"{nombreCarpeta}/antorcha");
 
-        nativeSizeCached = false; 
-        Debug.Log($"WallGenerator: Muros cargados desde {nombreCarpeta}");
+        fadeMatActual = Resources.Load<Material>($"{nombreCarpeta}/Wall1_FadeDown");
+        antorchaMatActual = Resources.Load<Material>($"{nombreCarpeta}/mat_antorcha")
+                          ?? Resources.Load<Material>($"{nombreCarpeta}/antorcha")
+                          ?? Resources.Load<Material>($"{nombreCarpeta}/defaultMat");
+
+        nativeSizeCached = false;
+        Debug.Log($"WallGenerator: Muros cargados desde {nombreCarpeta} (fadeMat={(fadeMatActual != null ? fadeMatActual.name : "NO ENCONTRADO")}, antorchaMat={(antorchaMatActual != null ? antorchaMatActual.name : "NO ENCONTRADO")})");
     }
 
     public void GenerarParedes(int sizeLevel)
@@ -142,11 +159,23 @@ public class WallGenerator : MonoBehaviour
         float offset = nativeSize.x / 2f;
         float xMontaje = -2.5f * blocSize - offset + nativeSize.x + antorchaOffsetInterior;
         Quaternion rot = Quaternion.Euler(antorchaRotacionEuler);
+
+        Debug.Log($"WallGenerator: spawneando antorchas con prefab='{antorchaPrefab.name}' (instanceId={antorchaPrefab.GetInstanceID()}), material override='{(antorchaMatActual != null ? antorchaMatActual.name : "ninguno")}' (instanceId={(antorchaMatActual != null ? antorchaMatActual.GetInstanceID() : 0)})");
         for (int z = separacionAntorchas / 2; z < sizeLevel; z += separacionAntorchas)
         {
             Vector3 pos = new Vector3(xMontaje, alturaAntorcha, z * blocSize);
             GameObject ant = Instantiate(antorchaPrefab, pos, rot, transform);
             ant.transform.localScale = antorchaEscala;
+            if (antorchaMatActual != null)
+            {
+                foreach (Renderer r in ant.GetComponentsInChildren<Renderer>())
+                {
+                    int n = r.sharedMaterials.Length;
+                    Material[] mats = new Material[n];
+                    for (int i = 0; i < n; i++) mats[i] = antorchaMatActual;
+                    r.sharedMaterials = mats;
+                }
+            }
             activeWalls.Add(ant);
         }
     }
@@ -180,6 +209,20 @@ public class WallGenerator : MonoBehaviour
         if (prefab == null) return;
         GameObject wall = Instantiate(prefab, position, rotation, transform);
         wall.transform.localScale = scale;
+        if (prefab == paredFade)
+        {
+            if (fadeMPB == null) fadeMPB = new MaterialPropertyBlock();
+            fadeMPB.SetColor("_ColorFondo", fadeColorFondo);
+            fadeMPB.SetColor("_BaseColor", fadeTint);
+            fadeMPB.SetFloat("_TopY", fadeTopY);
+            fadeMPB.SetFloat("_BottomY", fadeBottomY);
+
+            foreach (Renderer r in wall.GetComponentsInChildren<Renderer>())
+            {
+                if (fadeMatActual != null) r.sharedMaterial = fadeMatActual;
+                r.SetPropertyBlock(fadeMPB);
+            }
+        }
         activeWalls.Add(wall);
     }
 }

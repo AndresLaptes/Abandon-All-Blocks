@@ -24,6 +24,7 @@ MonoBehaviour:
   - columnas: 0100000000000000010000000100000001000000
   - columnas: 0100000001000000010000000100000001000000
   - columnas: 0100000001000000010000000100000001000000
+  colorFondo: {r: 1, g: 0.6130228, b: 0, a: 1}
   floorFall: 0
   fallFloorVelocity: 1
   requieredEnemiesToDoor: 0
