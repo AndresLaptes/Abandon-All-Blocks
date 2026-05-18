@@ -474,7 +474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 170e450ebffe5964a9ce7c879cf14a5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  voxelPrefab: {fileID: 919132149155446097, guid: 619df1c0e1cddd849b98f1d9963c2117,
+  voxelPrefab: {fileID: 2499121696994718463, guid: 8a37de45666781c43a4893bdaac1783f,
     type: 3}
   player: {fileID: 1700040685}
   blocSize: 2.5
@@ -482,6 +482,19 @@ MonoBehaviour:
   camara: {fileID: 330585548}
   wallGenerator: {fileID: 2001882478}
   enemySpawner: {fileID: 1449845798}
+  decoraciones:
+  - prefab: {fileID: 919132149155446097, guid: a7643357effe8ec4891e66bfd7d70c5c, type: 3}
+    escala: {x: 3, y: 3, z: 3}
+    rotacion: {x: 0, y: 180, z: 0}
+    offset: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 919132149155446097, guid: 0c3a667ff8e0f5f44a1d1a7aa7eaaa1a, type: 3}
+    escala: {x: 2.5, y: 2.5, z: 2.5}
+    rotacion: {x: 0, y: 230, z: 0}
+    offset: {x: 0, y: 0, z: 0}
+  - prefab: {fileID: 919132149155446097, guid: 0a9e9b3ec504f764d9e5bff38eec4aa2, type: 3}
+    escala: {x: 2.5, y: 2.5, z: 2.5}
+    rotacion: {x: 0, y: 180, z: 0}
+    offset: {x: 0.5, y: 0, z: 0}
 --- !u!4 &1079592816
 Transform:
   m_ObjectHideFlags: 0
@@ -819,17 +832,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 773b59c17c53b1f4487855570db64d3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  paredSuelo: {fileID: 919132149155446097, guid: b1b1e0ebe7b6b2a42ba03a4d21f6d1a9,
+  paredSuelo: {fileID: 919132149155446097, guid: 7fb1564ff3d805c4689c7304a7267aeb,
     type: 3}
-  paredArribaA: {fileID: 919132149155446097, guid: f891d5b5c3bc679429a7dae421510bb3,
+  paredArribaA: {fileID: 919132149155446097, guid: 53ed6565258ba6345ba4e2785e04bade,
     type: 3}
-  paredArribaB: {fileID: 919132149155446097, guid: b19a1b20522a1e64fa9554a0de631e1a,
+  paredArribaB: {fileID: 919132149155446097, guid: 2ea33df0407fe1943b0cc326e153a56b,
     type: 3}
-  paredFade: {fileID: 919132149155446097, guid: 32bc19cb067d35c42bf0cf0f171bafe5,
+  paredFade: {fileID: 919132149155446097, guid: 199b8104d7db99c43aa8360a375997a2,
     type: 3}
-  puertaArriba: {fileID: 919132149155446097, guid: 6e8b36f7d3a8c004590355c4b6210a41,
+  puertaArriba: {fileID: 919132149155446097, guid: 18c5dfafc86755a4bb0a5094018a8485,
     type: 3}
-  puertaAbajo: {fileID: 919132149155446097, guid: 3862d550855825a4692f2facd3a1c214,
+  puertaAbajo: {fileID: 919132149155446097, guid: e25d44fcd0d7bbf4f81175127575b6b1,
     type: 3}
   puertaCellX: 0
   blocSize: 2
@@ -837,7 +850,7 @@ MonoBehaviour:
   filasAbajo: 4
   solapePared: 1.01
   probabilidadDecoracion: 0.15
-  antorchaPrefab: {fileID: 919132149155446097, guid: 4f0068cab4675ac4aa48e1134e58be8c,
+  antorchaPrefab: {fileID: 919132149155446097, guid: 0a5ad5258ca037948bb31b2498af01f5,
     type: 3}
   separacionAntorchas: 4
   alturaAntorcha: 4

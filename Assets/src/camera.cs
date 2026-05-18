@@ -22,7 +22,14 @@ public class CameraFramer : MonoBehaviour
     void Awake()
     {
         cam = GetComponent<Camera>();
-        cam.orthographic = true; 
+        cam.orthographic = true;
+    }
+
+    public void SetFondo(Color c)
+    {
+        if (cam == null) cam = GetComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = c;
     }
 
     public void IniciarSeguimiento(Transform jugador, float tamañoBloque, int longitudNivel)

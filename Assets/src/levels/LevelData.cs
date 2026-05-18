@@ -17,8 +17,8 @@ public class LevelData : ScriptableObject
     [Tooltip("Al cambiar este número, la matriz de abajo se reseteará llena de 1s")]
     public int sizeLevel; 
 
-    [Header("Diseño del Mapa (1 = Suelo, 0 = Vacío)")]
-    public LevelRow[] filas; 
+    [Header("Diseño del Mapa (0 = Vacío, 1 = Suelo, 2+ = Suelo + decoración)")]
+    public LevelRow[] filas;
 
     private void OnValidate()
     {
@@ -37,6 +37,11 @@ public class LevelData : ScriptableObject
             }
         }
     }
+
+    [Header("Aspecto")]
+    public Color colorFondo = Color.black;
+    [Tooltip("Multiplica BaseColor de la pared fade Unlit. Bájalo para oscurecerla y que iguale el brillo de las paredes Lit de este nivel.")]
+    [ColorUsage(false, false)] public Color fadeTint = new Color(0.6f, 0.6f, 0.6f, 1f);
 
     [Header("Mecánicas del suelo")]
     public bool floorFall;

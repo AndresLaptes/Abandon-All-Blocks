@@ -28,9 +28,12 @@ public class LevelRowDrawer : PropertyDrawer
             // Calculamos la posición de cada cuadro
             Rect rect = new Rect(position.x + (i * width), position.y, width - padding, position.height);
 
-            // Estilo visual: Si es 1, el fondo será verde o normal; si es 0, más oscuro
+            // 0 = vacío (gris), 1 = suelo (verde), 2+ = suelo + decoración (color cíclico por valor)
             Color originalColor = GUI.backgroundColor;
-            GUI.backgroundColor = elemento.intValue == 1 ? Color.green : Color.grey;
+            int v = elemento.intValue;
+            if (v <= 0) GUI.backgroundColor = Color.grey;
+            else if (v == 1) GUI.backgroundColor = Color.green;
+            else GUI.backgroundColor = Color.HSVToRGB(((v - 2) * 0.17f + 0.5f) % 1f, 0.65f, 1f);
 
             // Dibujamos el campo como un IntField muy pequeño
             elemento.intValue = EditorGUI.IntField(rect, elemento.intValue);
