@@ -1139,7 +1139,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd8760c71cca8d14e80417ac6af08987, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabHereje: {fileID: 1969368895475008727, guid: ef593300d7820bc49903c994deef47f5,
+  prefabHereje: {fileID: 4557191549330646675, guid: 4469399cebd4cca4ca5e68fa693f6de8,
     type: 3}
   prefabGargola: {fileID: 9073779576794048910, guid: 94c946204ee22534c8c270d62791666d,
     type: 3}
@@ -1951,7 +1951,9 @@ MonoBehaviour:
     type: 3}
   puertaAbajo: {fileID: 919132149155446097, guid: e25d44fcd0d7bbf4f81175127575b6b1,
     type: 3}
+  puerta: {fileID: 0}
   puertaCellX: 0
+  puertaPanelOffset: {x: 0, y: 0.2, z: 0}
   blocSize: 2
   filasArriba: 1
   filasAbajo: 4
@@ -1968,6 +1970,8 @@ MonoBehaviour:
   fadeBottomY: -5
   fadeColorFondo: {r: 0, g: 0, b: 0, a: 1}
   fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  paredesApiladas: 0
+  doorActual: {fileID: 0}
 --- !u!4 &2001882479
 Transform:
   m_ObjectHideFlags: 0
