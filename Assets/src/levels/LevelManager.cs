@@ -30,6 +30,8 @@ public class LevelManager : MonoBehaviour
     private int[,] flowField;
     private float flowFieldTimer = 0f;
 
+    private HUDContadorSala hudSala;
+
     void Awake()
     {
         List<LevelData> listaNiveles = new List<LevelData>();
@@ -49,6 +51,7 @@ public class LevelManager : MonoBehaviour
 
     void Start()
     {
+        hudSala = FindObjectOfType<HUDContadorSala>();
         cargarSigueinteNivel();
     }
 
@@ -113,6 +116,11 @@ public class LevelManager : MonoBehaviour
         }
 
         GenerarMonedas(datoSala);
+
+        if (hudSala != null)
+        {
+            hudSala.ActualizarSala(datoSala.roomNumber);
+        }
 
         actualLevelIndex++;
     }
