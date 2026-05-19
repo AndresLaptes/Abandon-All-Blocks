@@ -4,7 +4,7 @@ using UnityEngine;
 public class Moneda : MonoBehaviour
 {
     public float velocidadRotacion = 90f;
-    public float alturaFlote = 0.2f; 
+    public float alturaFlote = 0.2f;
     public float velocidadFlote = 3f;
 
     public float alturaRecogida = 1.5f;
@@ -36,6 +36,10 @@ public class Moneda : MonoBehaviour
         {
             recogida = true;
             if (miCollider != null) miCollider.enabled = false;
+            
+            HUDContadorMonedas hud = FindObjectOfType<HUDContadorMonedas>();
+            if (hud != null) hud.SumarMoneda(1);
+
             StartCoroutine(AnimacionRecogida());
         }
     }

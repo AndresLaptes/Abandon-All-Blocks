@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level2
   m_EditorClassIdentifier: 
   levelName: Sala Base
-  roomNumber: 1
+  roomNumber: 2
   sizeLevel: 8
   filas:
   - columnas: 0100000001000000010000000100000001000000
@@ -25,6 +25,7 @@ MonoBehaviour:
   - columnas: 0100000001000000010000000100000001000000
   - columnas: 0100000001000000010000000100000001000000
   colorFondo: {r: 1, g: 0.6130228, b: 0, a: 1}
+  fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   floorFall: 0
   fallFloorVelocity: 1
   requieredEnemiesToDoor: 0
