@@ -36,7 +36,7 @@ MonoBehaviour:
   - columnas: 0100000001000000010000000100000001000000
   - columnas: 0100000001000000010000000100000001000000
   - columnas: 0100000001000000010000000100000001000000
-  colorFondo: {r: 1, g: 0.36978835, b: 0, a: 1}
+  colorFondo: {r: 0.34901961, g: 0.19215686, b: 0.18431373, a: 1}
   fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   floorFall: 0
   fallFloorVelocity: 1

@@ -100,12 +100,13 @@ public class LevelManager : MonoBehaviour
         PosicionarJugador();
 
         camara.IniciarSeguimiento(player.transform, blocSize, datoSala.sizeLevel);
+        camara.SetFondo(datoSala.colorFondo);
 
         if (wallGenerator != null)
         {
             wallGenerator.blocSize = blocSize;
             wallGenerator.fadeColorFondo = datoSala.colorFondo;
-            wallGenerator.fadeTint = datoSala.fadeTint;
+            wallGenerator.fadeTint = Color.white; // UnlitFadeShade ya aplica fake-shading; el brillo lo determina la normal de cada cara
             wallGenerator.paredesApiladas = datoSala.paredesApiladas;
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
         }

@@ -21,8 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Wall1_FadeDown
-  m_Shader: {fileID: -6465566751694194690, guid: 754b5efcad1a69b4f9c406adb7aaa06c,
-    type: 3}
+  m_Shader: {fileID: 4800000, guid: b1c2d3e4f5a60718293a4b5c6d7e8f01, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -132,7 +131,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _ColorFondo: {r: 1, g: 0.6117647, b: 0, a: 1}
+    - _ColorFondo: {r: 0.33333333, g: 0.29019608, b: 0.29019608, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
