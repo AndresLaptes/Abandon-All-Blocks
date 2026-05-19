@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level2
   m_EditorClassIdentifier: 
   levelName: Sala Base
-  roomNumber: 1
+  roomNumber: 2
   sizeLevel: 8
   filas:
   - columnas: 0100000001000000010000000100000001000000
