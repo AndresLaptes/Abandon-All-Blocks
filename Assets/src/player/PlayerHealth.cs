@@ -6,14 +6,21 @@ public class PlayerHealth : MonoBehaviour
     public int vidasMaximas = 3;
     private int vidasActuales;
 
+    [Header("Impacto e Invulnerabilidad")]
+    public float tiempoInvulnerabilidad = 1.5f;
+    public float tiempoCongeladoPorImpacto = 0.5f;
+
     private HUDCorazones3D hudCorazones;
     private GridMovement movimiento;
     private LevelManager manager;
+    private Animator anim;
+    private bool esInvulnerable = false;
 
     void Start()
     {
         vidasActuales = vidasMaximas;
         movimiento = GetComponent<GridMovement>();
+        anim = GetComponentInChildren<Animator>();
         manager = FindObjectOfType<LevelManager>();
         hudCorazones = FindObjectOfType<HUDCorazones3D>();
         
@@ -22,15 +29,13 @@ public class PlayerHealth : MonoBehaviour
             hudCorazones.ConstruirHUD(vidasMaximas);
             hudCorazones.ActualizarVidasHUD(vidasActuales);
         }
-        else
-        {
-            Debug.LogWarning("HUDCorazones3D no encontrado en la escena.");
-        }
     }
 
     public void RecibirDano()
     {
-        if (vidasActuales <= 0 || !movimiento.enabled) return; 
+        if (vidasActuales <= 0 || !movimiento.enabled || esInvulnerable || movimiento.IsDead()) return; 
+
+        if (movimiento.IsDefending()) return;
 
         vidasActuales--;
         
@@ -41,22 +46,57 @@ public class PlayerHealth : MonoBehaviour
 
         if (vidasActuales > 0)
         {
-            StartCoroutine(RutinaMuerteYRespawn());
+            StartCoroutine(RutinaImpactoYParpadeo());
         }
         else
         {
-            Debug.LogError("GAME OVER");
+            StartCoroutine(RutinaMuerteYRespawn());
         }
+    }
+
+    private IEnumerator RutinaImpactoYParpadeo()
+    {
+        esInvulnerable = true;
+        movimiento.SetHurt(true);
+        
+        if (anim != null) anim.SetTrigger("Impacto");
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        float t = 0;
+        bool visible = true;
+        
+        while (t < tiempoInvulnerabilidad)
+        {
+            t += 0.1f;
+            visible = !visible;
+            
+            foreach (Renderer r in renderers) 
+            {
+                if (r != null) r.enabled = visible;
+            }
+            
+            if (t >= tiempoCongeladoPorImpacto)
+            {
+                movimiento.SetHurt(false);
+            }
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        foreach (Renderer r in renderers) 
+        {
+            if (r != null) r.enabled = true;
+        }
+        
+        esInvulnerable = false;
+        movimiento.SetHurt(false);
     }
 
     private IEnumerator RutinaMuerteYRespawn()
     {
         movimiento.enabled = false;
-
         yield return new WaitForSeconds(2.5f);
-
         manager.PosicionarJugador();
-
         movimiento.enabled = true;
     }
 }
