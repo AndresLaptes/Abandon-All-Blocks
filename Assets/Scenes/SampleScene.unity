@@ -1088,7 +1088,7 @@ MonoBehaviour:
     type: 3}
   player: {fileID: 1700040685}
   blocSize: 2.5
-  nivelInicialParaProbar: 2
+  nivelInicialParaProbar: 10
   prefabMoneda: {fileID: 148711598779066864, guid: ca975475be2642b4e99ee61880d3d635,
     type: 3}
   offsetAlturaMonedas: 2.75
@@ -1956,7 +1956,7 @@ MonoBehaviour:
   puertaPanelOffset: {x: 0, y: 0.2, z: 0}
   blocSize: 2
   filasArriba: 1
-  filasAbajo: 4
+  filasAbajo: 1
   solapePared: 1.01
   probabilidadDecoracion: 0.15
   antorchaPrefab: {fileID: 919132149155446097, guid: 0a5ad5258ca037948bb31b2498af01f5,
@@ -1966,8 +1966,8 @@ MonoBehaviour:
   antorchaRotacionEuler: {x: 0, y: 90, z: 0}
   antorchaOffsetInterior: 0
   antorchaEscala: {x: 3, y: 3, z: 3}
-  fadeTopY: 1
-  fadeBottomY: -5
+  fadeTopY: 1.5
+  fadeBottomY: -1.25
   fadeColorFondo: {r: 0, g: 0, b: 0, a: 1}
   fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   paredesApiladas: 0
