@@ -13,13 +13,11 @@ public class GridMovement : MonoBehaviour
     private bool isDead = false;
     private Animator anim;
     
-    // Referencia a nuestro mapa
     private LevelManager levelManager;
 
     void Start()
     {
         anim = GetComponentInChildren<Animator>(); 
-        // Buscamos el LevelManager automáticamente al empezar
         levelManager = FindObjectOfType<LevelManager>();
     }
 
@@ -36,6 +34,8 @@ public class GridMovement : MonoBehaviour
         if (anim == null) anim = GetComponentInChildren<Animator>();
         if (anim != null)
         {
+            anim.Rebind();
+            anim.Update(0f);
             anim.SetBool("Caminando", false);
             anim.ResetTrigger("Caer");
         }
@@ -115,8 +115,6 @@ public class GridMovement : MonoBehaviour
             tiempoPasado += Time.deltaTime;
             yield return null;
         }
-
-
     }
     
     private IEnumerator MoverConRetraso(Vector3 destino, float retraso)

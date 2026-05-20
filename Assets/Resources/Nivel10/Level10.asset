@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level10
   m_EditorClassIdentifier: 
   levelName: Sala Final
-  roomNumber: 10
+  roomNumber: 9
   sizeLevel: 20
   filas:
   - columnas: 0100000001000000010000000100000001000000

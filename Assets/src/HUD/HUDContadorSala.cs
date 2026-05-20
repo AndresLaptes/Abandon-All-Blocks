@@ -8,6 +8,7 @@ public class HUDContadorSala : MonoBehaviour
 
     public void ActualizarSala(int numeroSala)
     {
+        numeroSala = numeroSala + 1;
         if (textoContador != null)
         {
             textoContador.text = prefijo + numeroSala.ToString();
