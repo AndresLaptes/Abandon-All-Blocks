@@ -95,7 +95,7 @@ public class GridMovement : MonoBehaviour
             anim.SetTrigger("Atacar");
         }
         
-        yield return new WaitForSeconds(1.14f); 
+        yield return new WaitForSeconds(1.8f); 
         
         if (anim != null) 
         {
