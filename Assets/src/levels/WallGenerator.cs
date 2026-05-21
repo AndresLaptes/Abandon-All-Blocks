@@ -4,10 +4,10 @@ using UnityEngine;
 public class WallGenerator : MonoBehaviour
 {
     [Header("Prefabs de pared")]
-    public GameObject paredSuelo;     
-    public GameObject paredArribaA;   
-    public GameObject paredArribaB;   
-    public GameObject paredFade;      
+    public GameObject paredSuelo;
+    public GameObject paredArribaA;
+    public GameObject paredArribaB;
+    public GameObject paredFade;
 
     [Header("Puerta")]
     public GameObject puertaArriba;
@@ -64,7 +64,7 @@ public class WallGenerator : MonoBehaviour
         paredArribaA = Resources.Load<GameObject>($"{nombreCarpeta}/paredDecoA") ?? Resources.Load<GameObject>($"{nombreCarpeta}/pared1_2");
         paredArribaB = Resources.Load<GameObject>($"{nombreCarpeta}/paredDecoB") ?? Resources.Load<GameObject>($"{nombreCarpeta}/pared1_3");
         paredFade = Resources.Load<GameObject>($"{nombreCarpeta}/paredFade") ?? Resources.Load<GameObject>($"{nombreCarpeta}/pared1_4");
-        
+
         puertaArriba = Resources.Load<GameObject>($"{nombreCarpeta}/puertaArriba") ?? Resources.Load<GameObject>($"{nombreCarpeta}/puerta1_1");
         puertaAbajo = Resources.Load<GameObject>($"{nombreCarpeta}/puertaAbajo") ?? Resources.Load<GameObject>($"{nombreCarpeta}/puerta1_2");
         puerta = Resources.Load<GameObject>($"{nombreCarpeta}/puerta");
