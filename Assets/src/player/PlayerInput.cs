@@ -14,7 +14,20 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
-        if (gridMovement.IsMoving()) return;
+        if (gridMovement.IsDead() || gridMovement.IsHurt()) return;
+
+        bool defendiendo = Input.GetMouseButton(1);
+        gridMovement.SetDefending(defendiendo);
+
+        if (defendiendo) return;
+
+        if (Input.GetMouseButtonDown(0) && !gridMovement.IsMoving() && !gridMovement.IsAttacking())
+        {
+            gridMovement.Atacar();
+            return;
+        }
+
+        if (gridMovement.IsMoving() || gridMovement.IsAttacking()) return;
         
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) 
             gridMovement.move(Vector3.forward);

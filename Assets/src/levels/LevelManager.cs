@@ -26,10 +26,13 @@ public class LevelManager : MonoBehaviour
     private LevelData[] nivelesJuego;
     private Queue<GameObject> tilePool = new Queue<GameObject>();
     private List<GameObject> activeTilesInRoom = new List<GameObject>();
+    private List<GameObject> monedasActivas = new List<GameObject>();
     private int actualLevelIndex = 0;
 
     private int[,] flowField;
     private float flowFieldTimer = 0f;
+
+    private HUDContadorSala hudSala;
 
     void Awake()
     {
@@ -50,6 +53,7 @@ public class LevelManager : MonoBehaviour
 
     void Start()
     {
+        hudSala = FindObjectOfType<HUDContadorSala>();
         cargarSigueinteNivel();
     }
 
@@ -62,6 +66,20 @@ public class LevelManager : MonoBehaviour
         {
             GenerarFloodField();
             flowFieldTimer = 0f;
+        }
+
+        for (int i = 0; i <= 9; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha0 + i) || Input.GetKeyDown(KeyCode.Keypad0 + i))
+            {
+                int targetIndex = (i == 0) ? 9 : i - 1; 
+                
+                if (targetIndex >= 0 && targetIndex < nivelesJuego.Length)
+                {
+                    actualLevelIndex = targetIndex;
+                    cargarSigueinteNivel();
+                }
+            }
         }
     }
 
@@ -78,6 +96,8 @@ public class LevelManager : MonoBehaviour
             DestruirPoolActual();
             voxelPrefab = nuevoSuelo;
         }
+
+        LimpiarMonedas();
 
         if (wallGenerator != null)
         {
@@ -120,6 +140,11 @@ public class LevelManager : MonoBehaviour
         }
 
         GenerarMonedas(datoSala);
+
+        if (hudSala != null)
+        {
+            hudSala.ActualizarSala(datoSala.roomNumber);
+        }
 
         actualLevelIndex++;
     }
@@ -201,8 +226,15 @@ public class LevelManager : MonoBehaviour
     {
         foreach (GameObject tile in activeTilesInRoom) if (tile != null) Destroy(tile);
         foreach (GameObject tile in tilePool) if (tile != null) Destroy(tile);
+        
         activeTilesInRoom.Clear();
         tilePool.Clear();
+    }
+
+    private void LimpiarMonedas()
+    {
+        foreach (GameObject moneda in monedasActivas) if (moneda != null) Destroy(moneda);
+        monedasActivas.Clear();
     }
 
     public void PosicionarJugador()
@@ -335,7 +367,8 @@ public class LevelManager : MonoBehaviour
             float alturaSuelo = tileElegido.transform.position.y + offsetAlturaMonedas; 
             Vector3 posSpawn = new Vector3(tileElegido.transform.position.x, alturaSuelo, tileElegido.transform.position.z);
             
-            Instantiate(prefabMoneda, posSpawn, Quaternion.identity);
+            GameObject nuevaMoneda = Instantiate(prefabMoneda, posSpawn, Quaternion.identity);
+            monedasActivas.Add(nuevaMoneda);
         }
     }
 }
