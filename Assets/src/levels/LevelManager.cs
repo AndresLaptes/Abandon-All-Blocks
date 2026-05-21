@@ -21,6 +21,7 @@ public class LevelManager : MonoBehaviour
     public CameraFramer camara;
     public WallGenerator wallGenerator;
     public EnemySpawner enemySpawner;
+    public TrampaSpawner trampaSpawner;
 
     private LevelData[] nivelesJuego;
     private Queue<GameObject> tilePool = new Queue<GameObject>();
@@ -131,6 +132,11 @@ public class LevelManager : MonoBehaviour
         if (enemySpawner != null)
         {
             enemySpawner.GenerarEnemigos(datoSala, blocSize, this);
+        }
+
+        if (trampaSpawner != null)
+        {
+            trampaSpawner.GenerarTrampas(datoSala, blocSize, this);
         }
 
         GenerarMonedas(datoSala);

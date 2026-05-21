@@ -26,7 +26,7 @@ public class LevelData : ScriptableObject
         if (filas == null || filas.Length != sizeLevel)
         {
             filas = new LevelRow[sizeLevel];
-            
+
             for (int i = 0; i < sizeLevel; i++)
             {
                 filas[i] = new LevelRow();
@@ -34,6 +34,26 @@ public class LevelData : ScriptableObject
                 {
                     filas[i].columnas[j] = 1; // Rellenamos con 1 por defecto
                 }
+            }
+        }
+
+        if (gridPinchos == null || gridPinchos.Length != sizeLevel)
+        {
+            gridPinchos = new LevelRow[sizeLevel];
+            for (int i = 0; i < sizeLevel; i++)
+            {
+                gridPinchos[i] = new LevelRow();
+                for (int j = 0; j < 5; j++) gridPinchos[i].columnas[j] = 0;
+            }
+        }
+
+        if (gridHachas == null || gridHachas.Length != sizeLevel)
+        {
+            gridHachas = new LevelRow[sizeLevel];
+            for (int i = 0; i < sizeLevel; i++)
+            {
+                gridHachas[i] = new LevelRow();
+                for (int j = 0; j < 5; j++) gridHachas[i].columnas[j] = 0;
             }
         }
     }
@@ -62,4 +82,16 @@ public class LevelData : ScriptableObject
     public int numTramps;
 
     public GameObject[] allowedEnemyTypes;
+
+    [Header("Trampas")]
+    [Tooltip("Índices Z (filas) donde aparecen troncos rodantes. Ej: [3,5] = filas Z=3 y Z=5 tendrán tronco.")]
+    public int[] filasTrampaTronco;
+
+    [Header("Trampas de pinchos")]
+    [Tooltip("Grid paralelo al suelo. 1 = trampa de pinchos en esa celda. Solo activa donde hay suelo.")]
+    public LevelRow[] gridPinchos;
+
+    [Header("Trampas de hachas")]
+    [Tooltip("Grid paralelo al suelo. 1 = hacha colgante oscilando sobre esa celda.")]
+    public LevelRow[] gridHachas;
 }
