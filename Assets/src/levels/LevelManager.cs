@@ -9,6 +9,9 @@ public class LevelManager : MonoBehaviour
     public GameObject voxelPrefab;
     public GameObject player;
     public float blocSize = 2f;
+    
+    [Tooltip("Ajuste manual para subir o bajar al jugador si se hunde o flota")]
+    public float offsetAlturaJugador = 0f; 
 
     [Header("Configuración de Niveles")]
     public int nivelInicialParaProbar = 1; 
@@ -124,7 +127,7 @@ public class LevelManager : MonoBehaviour
         {
             wallGenerator.blocSize = blocSize;
             wallGenerator.fadeColorFondo = datoSala.colorFondo;
-            wallGenerator.fadeTint = Color.white; // UnlitFadeShade ya aplica fake-shading; el brillo lo determina la normal de cada cara
+            wallGenerator.fadeTint = Color.white; 
             wallGenerator.paredesApiladas = datoSala.paredesApiladas;
             wallGenerator.GenerarParedes(datoSala.sizeLevel);
         }
@@ -248,7 +251,9 @@ public class LevelManager : MonoBehaviour
         float mitadAlturaJugador = 0.5f;
         Renderer rendererJugador = player.GetComponentInChildren<Renderer>();
         if (rendererJugador != null) mitadAlturaJugador = rendererJugador.bounds.size.y / 2f;
-        player.transform.position = new Vector3(0f, techoDelSuelo + mitadAlturaJugador, -1f * blocSize);
+        
+        player.transform.position = new Vector3(0f, techoDelSuelo + mitadAlturaJugador + offsetAlturaJugador, -1f * blocSize);
+        
         if (mov != null) mov.ConfigurarPaso(blocSize);
     }
 
