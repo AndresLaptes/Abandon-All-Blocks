@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5667792614922522944
+--- !u!1001 &686609513494420740
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -63,6 +63,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: DemonioBrea_Character
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: a8402ccaaab7e8d459424b196a9f3814,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: dad0a4afad2c52d4b8da017351603a78, type: 2}
+    - target: {fileID: 5866666021909216657, guid: a8402ccaaab7e8d459424b196a9f3814,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -70,27 +80,31 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a8402ccaaab7e8d459424b196a9f3814,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7753258706418150589}
+      addedObject: {fileID: 9198051267437578383}
   m_SourcePrefab: {fileID: 100100000, guid: a8402ccaaab7e8d459424b196a9f3814, type: 3}
---- !u!1 &4785464429355936785 stripped
+--- !u!1 &380055432937349205 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a8402ccaaab7e8d459424b196a9f3814,
     type: 3}
-  m_PrefabInstance: {fileID: 5667792614922522944}
+  m_PrefabInstance: {fileID: 686609513494420740}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7753258706418150589
+--- !u!114 &9198051267437578383
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4785464429355936785}
+  m_GameObject: {fileID: 380055432937349205}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb58a9cd8cdfcde4fb64829ab64b6bba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocidadMovimiento: 5
-  tiempoEsperaMinimo: 0.5
-  tiempoEsperaMaximo: 2
-  modoDebug: 1
+  tiempoDeViajePorCasilla: 0.5
+  tiempoEsperaMinimo: 3
+  tiempoEsperaMaximo: 6
+  distanciaRetroceso: 0.5
+  tiempoAnticipacion: 1.1
+  tiempoDash: 0.12
+  tiempoRecuperacion: 0.97
+  modoDebug: 0

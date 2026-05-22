@@ -10,13 +10,9 @@ public class GridMovement : MonoBehaviour
     [SerializeField] private float limiteCaidaY = -5f; 
 
     [Header("Equipamiento Visual")]
-    [Tooltip("Arrastra aquí tu espada desde la Jerarquía")]
     public GameObject espadaObj;
-    [Tooltip("Arrastra aquí tu escudo desde la Jerarquía")]
     public GameObject escudoObj;
     public float tiempoAparicionArmas = 0.5f; 
-    
-    [Tooltip("Tamaño máximo que alcanzarán las armas al terminar de rezar")]
     public Vector3 tamanoFinalArmas = new Vector3(0.5f, 0.5f, 0.5f);
     
     private bool isMoving = false;
@@ -33,17 +29,12 @@ public class GridMovement : MonoBehaviour
     {
         anim = GetComponentInChildren<Animator>(); 
         levelManager = FindObjectOfType<LevelManager>();
-        
-        if (anim != null)
-        {
-            anim.applyRootMotion = false;
-        }
+        if (anim != null) anim.applyRootMotion = false;
     }
 
     void Update()
     {
         if (anim == null) return;
-
         bool estaRezando = anim.GetCurrentAnimatorStateInfo(0).IsName("pray");
 
         if (estaRezando && !estabaRezando)
@@ -66,26 +57,16 @@ public class GridMovement : MonoBehaviour
 
     private IEnumerator AparecerArmasProgresivamente()
     {
-        if (espadaObj != null)
-        {
-            espadaObj.SetActive(true);
-            espadaObj.transform.localScale = Vector3.zero; 
-        }
-        if (escudoObj != null)
-        {
-            escudoObj.SetActive(true);
-            escudoObj.transform.localScale = Vector3.zero;
-        }
+        if (espadaObj != null) { espadaObj.SetActive(true); espadaObj.transform.localScale = Vector3.zero; }
+        if (escudoObj != null) { escudoObj.SetActive(true); escudoObj.transform.localScale = Vector3.zero; }
 
         float t = 0f;
         while (t < tiempoAparicionArmas)
         {
             t += Time.deltaTime;
             float progreso = t / tiempoAparicionArmas;
-
             if (espadaObj != null) espadaObj.transform.localScale = Vector3.Lerp(Vector3.zero, tamanoFinalArmas, progreso);
             if (escudoObj != null) escudoObj.transform.localScale = Vector3.Lerp(Vector3.zero, tamanoFinalArmas, progreso);
-
             yield return null;
         }
 
@@ -93,10 +74,7 @@ public class GridMovement : MonoBehaviour
         if (escudoObj != null) escudoObj.transform.localScale = tamanoFinalArmas;
     }
 
-    public void ConfigurarPaso(float nuevoPaso)
-    {
-        step_size = nuevoPaso;
-    }
+    public void ConfigurarPaso(float nuevoPaso) { step_size = nuevoPaso; }
 
     public void ResetearEstado()
     {
@@ -124,31 +102,63 @@ public class GridMovement : MonoBehaviour
     }
 
     public bool IsDead() => isDead;
+    public void SetDead(bool deadState) { isDead = deadState; }
     public bool IsHurt() => isHurt;
     public bool IsAttacking() => isAttacking;
     public bool IsDefending() => isDefending;
     public bool IsMoving() => isMoving;
     public float TiempoMovimiento => tiempoMovimiento;
 
-    public void SetHurt(bool state) 
-    { 
-        isHurt = state; 
-    }
+    public void SetHurt(bool state) { isHurt = state; }
 
     public void SetDefending(bool def) 
     { 
         if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray")) return;
-
         if (isDefending == def) return; 
         
         isDefending = def; 
         if (anim != null) anim.SetBool("Defendiendo", def); 
     }
 
+    // --- NUEVO: MINI DASH AL RECIBIR DAÑO MIENTRAS BLOQUEAS ---
+    public void GolpeBloqueado()
+    {
+        if (!isMoving) StartCoroutine(RutinaRechazoDefensa());
+    }
+
+    private IEnumerator RutinaRechazoDefensa()
+    {
+        isMoving = true; 
+        Vector3 posInicial = transform.position;
+        Vector3 posRetroceso = posInicial - (transform.forward * (step_size * 0.3f)); // Retrocede un 30% de la celda
+        
+        float dur = 0.15f;
+        float t = 0;
+        
+        // Empujón atrás
+        while(t < dur) 
+        { 
+            t += Time.deltaTime; 
+            transform.position = Vector3.Lerp(posInicial, posRetroceso, t / dur); 
+            yield return null; 
+        }
+        
+        // Vuelve adelante
+        t = 0;
+        while(t < dur) 
+        { 
+            t += Time.deltaTime; 
+            transform.position = Vector3.Lerp(posRetroceso, posInicial, t / dur); 
+            yield return null; 
+        }
+        
+        transform.position = posInicial;
+        isMoving = false;
+    }
+
     public void Atacar() 
     { 
         if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray")) return;
-
         if (isAttacking) return;
         StartCoroutine(RutinaAtaque()); 
     }
@@ -166,12 +176,26 @@ public class GridMovement : MonoBehaviour
             anim.SetTrigger("Atacar");
         }
         
-        yield return new WaitForSeconds(1.7f); 
+        // Esperamos un instante pequeñito para que el ataque coincida visualmente con la espada
+        yield return new WaitForSeconds(0.4f); 
+
+        
+        Vector3 posFrente = transform.position + (transform.forward * step_size);
+        posFrente.x = Mathf.Round(posFrente.x / step_size) * step_size;
+        posFrente.z = Mathf.Round(posFrente.z / step_size) * step_size;
+
+        if (levelManager != null && levelManager.enemySpawner != null)
+        {
+            EnemyController enemigoTarget = levelManager.enemySpawner.ObtenerEnemigoEn(posFrente);
+            if (enemigoTarget != null) enemigoTarget.RecibirDano(); // One hit kill
+        }
+
+        // Esperamos el resto de la animación de ataque (1.7 - 0.4 = 1.3)
+        yield return new WaitForSeconds(1.3f); 
         
         if (anim != null) 
         {
             anim.applyRootMotion = false; 
-            
             transform.position = posicionOriginal;
             transform.rotation = rotacionOriginal;
         }
