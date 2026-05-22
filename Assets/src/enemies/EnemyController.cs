@@ -9,14 +9,10 @@ public class EnemyController : MonoBehaviour
     public float tiempoEsperaMaximo = 1.5f;
 
     [Header("Configuración de Ataque")]
-    [Tooltip("Distancia que retrocede para tomar impulso")]
     public float distanciaRetroceso = 0.5f; 
-    public float tiempoAnticipacion = 0.4f; // Cuánto tarda en cargar hacia atrás
-    public float tiempoDash = 0.1f;         // Velocidad del golpe
-    public float tiempoRecuperacion = 0.2f; // Cuánto tarda en volver a su casilla original
-
-    [Header("Herramientas")]
-    public bool modoDebug = false;
+    public float tiempoAnticipacion = 1.10f; 
+    public float tiempoDash = 0.12f;         
+    public float tiempoRecuperacion = 0.97f; 
 
     private float blocSize;
     private LevelManager levelManager;
@@ -25,6 +21,11 @@ public class EnemyController : MonoBehaviour
 
     private bool isMoving = false;
     private bool isAttacking = false;
+    private bool isDead = false;
+    
+    private Animator anim;
+
+    public bool IsDead() => isDead;
 
     public void Inicializar(float tamanoBloque, LevelManager manager, Transform jugador, EnemySpawner spawnerRef)
     {
@@ -33,7 +34,47 @@ public class EnemyController : MonoBehaviour
         player = jugador;
         spawner = spawnerRef;
 
+        anim = GetComponentInChildren<Animator>();
+        if (anim != null) anim.applyRootMotion = false;
+
         StartCoroutine(RutinaDeIA());
+    }
+
+    public void RecibirDano()
+    {
+        if (isDead) return;
+        isDead = true;
+        
+        StopAllCoroutines(); 
+        
+        if (anim != null) anim.SetTrigger("Morir");
+        
+
+        if (spawner != null && spawner.enemigosActivos.Contains(this.gameObject))
+        {
+            spawner.enemigosActivos.Remove(this.gameObject);
+        }
+
+        StartCoroutine(RutinaMuerte());
+    }
+
+    private IEnumerator RutinaMuerte()
+    {
+        yield return new WaitForSeconds(2.5f);
+
+        float t = 0;
+        float duracionHundimiento = 2f;
+        Vector3 posOriginal = transform.position;
+        Vector3 posFinal = posOriginal + Vector3.down * (blocSize * 1.5f);
+
+        while (t < duracionHundimiento)
+        {
+            t += Time.deltaTime;
+            transform.position = Vector3.Lerp(posOriginal, posFinal, t / duracionHundimiento);
+            yield return null;
+        }
+
+        Destroy(gameObject);
     }
 
     private IEnumerator RutinaDeIA()
@@ -42,26 +83,23 @@ public class EnemyController : MonoBehaviour
 
         while (true)
         {
+            if (isDead) yield break; 
+
             float tiempoEspera = Random.Range(tiempoEsperaMinimo, tiempoEsperaMaximo);
             yield return new WaitForSeconds(tiempoEspera);
 
-            if (!isMoving && !isAttacking && player != null)
+            if (!isMoving && !isAttacking && player != null && !isDead)
             {
-                // Aplanamos las posiciones (ignorando la Y) para calcular la distancia en cuadrícula
                 Vector3 miPosPlana = new Vector3(transform.position.x, 0, transform.position.z);
                 Vector3 playerPosPlana = new Vector3(player.position.x, 0, player.position.z);
                 
-                // Si el jugador está justo en la casilla de al lado (aprox 1 bloque de distancia)
                 if (Vector3.Distance(miPosPlana, playerPosPlana) < (blocSize * 1.2f))
                 {
-                    // ¡INICIAR SECUENCIA DE ATAQUE!
                     yield return StartCoroutine(RealizarAtaque(player.position));
                 }
                 else
                 {
-                    // Si el jugador está lejos, pensar cómo acercarse
                     Vector3 mejorCasilla = CalcularMejorCasilla();
-                    
                     if (Vector3.Distance(transform.position, mejorCasilla) > 0.1f)
                     {
                         yield return StartCoroutine(MoverA(mejorCasilla));
@@ -74,42 +112,38 @@ public class EnemyController : MonoBehaviour
     private IEnumerator RealizarAtaque(Vector3 posJugadorDestino)
     {
         isAttacking = true;
+        if (anim != null) anim.SetTrigger("Atacar");
 
-        Vector3 posInicial = transform.position;
+        Vector3 posInicial = new Vector3(
+            Mathf.Round(transform.position.x / blocSize) * blocSize,
+            transform.position.y,
+            Mathf.Round(transform.position.z / blocSize) * blocSize
+        );
+        
         Vector3 direccionAtaque = (posJugadorDestino - posInicial).normalized;
-        direccionAtaque.y = 0; // Evitamos que mire hacia el cielo o el suelo
+        direccionAtaque.y = 0; 
+        if (direccionAtaque != Vector3.zero) transform.rotation = Quaternion.LookRotation(direccionAtaque);
 
-        // Mirar fijamente al jugador antes de atacar
-        if (direccionAtaque != Vector3.zero)
-        {
-            transform.rotation = Quaternion.LookRotation(direccionAtaque);
-        }
-
-        // --- 1. WIND-UP (Anticipación visual) ---
-        // Se echa un poco hacia atrás para "tomar impulso"
         Vector3 posRetroceso = posInicial - (direccionAtaque * distanciaRetroceso);
         float t = 0;
         while (t < tiempoAnticipacion)
         {
+            if (isDead) yield break; 
             t += Time.deltaTime;
             transform.position = Vector3.Lerp(posInicial, posRetroceso, t / tiempoAnticipacion);
             yield return null;
         }
 
-        // --- 2. DASH (El golpe) ---
-        // Avanza rapidísimo hacia adelante
-        Vector3 posImpacto = posInicial + (direccionAtaque * (blocSize * 0.8f)); // 0.8f para no fusionarse en el centro del jugador
+        Vector3 posImpacto = posInicial + (direccionAtaque * (blocSize * 0.8f)); 
         t = 0;
         while (t < tiempoDash)
         {
+            if (isDead) yield break; 
             t += Time.deltaTime;
             transform.position = Vector3.Lerp(posRetroceso, posImpacto, t / tiempoDash);
             yield return null;
         }
 
-        // --- 3. TRIGGER DEL DAÑO ---
-        // Al terminar el Dash, comprobamos si el jugador sigue cerca.
-        // Si el jugador se ha movido rápido y la esquivó, ¡el ataque fallará! (Gran jugabilidad)
         Vector3 posPlanaImpacto = new Vector3(transform.position.x, 0, transform.position.z);
         Vector3 posPlanaJugador = new Vector3(player.position.x, 0, player.position.z);
 
@@ -119,11 +153,10 @@ public class EnemyController : MonoBehaviour
             if (salud != null) salud.RecibirDano();
         }
 
-        // --- 4. RECUPERACIÓN ---
-        // El enemigo rebota/vuelve a su casilla original
         t = 0;
         while (t < tiempoRecuperacion)
         {
+            if (isDead) yield break; 
             t += Time.deltaTime;
             transform.position = Vector3.Lerp(posImpacto, posInicial, t / tiempoRecuperacion);
             yield return null;
@@ -136,55 +169,51 @@ public class EnemyController : MonoBehaviour
     private Vector3 CalcularMejorCasilla()
     {
         Vector3[] direcciones = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-        
-        Vector3 posicionIdeal = transform.position;
+        Vector3 posActualAlineada = new Vector3(
+            Mathf.Round(transform.position.x / blocSize) * blocSize,
+            transform.position.y,
+            Mathf.Round(transform.position.z / blocSize) * blocSize
+        );
+
+        Vector3 posicionIdeal = posActualAlineada; 
         float mejorPuntuacion = float.MaxValue; 
 
         for (int i = 0; i < direcciones.Length; i++)
         {
             Vector3 destinoPrueba = new Vector3(
-                transform.position.x + (direcciones[i].x * blocSize),
-                transform.position.y,
-                transform.position.z + (direcciones[i].z * blocSize)
+                posActualAlineada.x + (direcciones[i].x * blocSize),
+                posActualAlineada.y,
+                posActualAlineada.z + (direcciones[i].z * blocSize)
             );
 
             int costoFloodField = levelManager.ObtenerCostoFloodField(destinoPrueba);
-            
             if (costoFloodField == 255) continue;
             if (spawner.HayEnemigoEn(destinoPrueba, this.gameObject)) continue;
             
-            if (Mathf.Abs(player.position.x - destinoPrueba.x) < 0.1f && Mathf.Abs(player.position.z - destinoPrueba.z) < 0.1f)
-            {
-                continue;
-            }
+            if (Mathf.Abs(player.position.x - destinoPrueba.x) < 0.1f && Mathf.Abs(player.position.z - destinoPrueba.z) < 0.1f) continue;
             
             float penalizacionPorApelotonamiento = 0f;
             foreach (GameObject aliado in spawner.enemigosActivos)
             {
                 if (aliado == this.gameObject || aliado == null) continue;
-                
                 float distAliado = Vector3.Distance(destinoPrueba, aliado.transform.position);
-                if (distAliado < blocSize * 1.5f) 
-                {
-                    penalizacionPorApelotonamiento += (blocSize * 2f - distAliado);
-                }
+                if (distAliado < blocSize * 1.5f) penalizacionPorApelotonamiento += (blocSize * 2f - distAliado);
             }
 
             float puntuacionFinal = costoFloodField + penalizacionPorApelotonamiento;
-
             if (puntuacionFinal < mejorPuntuacion)
             {
                 mejorPuntuacion = puntuacionFinal;
                 posicionIdeal = destinoPrueba;
             }
         }
-
         return posicionIdeal;
     }
 
     private IEnumerator MoverA(Vector3 destino)
     {
         isMoving = true;
+        if (anim != null) anim.SetBool("Caminando", true);
 
         Vector3 direccionMirada = (destino - transform.position).normalized;
         if (direccionMirada != Vector3.zero)
@@ -198,13 +227,14 @@ public class EnemyController : MonoBehaviour
 
         while (tiempoPasado < tiempoDeViajePorCasilla)
         {
+            if (isDead) yield break; 
             tiempoPasado += Time.deltaTime;
-            float progreso = tiempoPasado / tiempoDeViajePorCasilla;
-            transform.position = Vector3.Lerp(posicionInicial, destino, progreso);
+            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / tiempoDeViajePorCasilla);
             yield return null;
         }
 
         transform.position = destino;
         isMoving = false;
+        if (anim != null) anim.SetBool("Caminando", false);
     }
 }
