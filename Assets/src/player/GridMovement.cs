@@ -8,12 +8,23 @@ public class GridMovement : MonoBehaviour
     
     [Header("Configuración de Caída")]
     [SerializeField] private float limiteCaidaY = -5f; 
+
+    [Header("Equipamiento Visual")]
+    [Tooltip("Arrastra aquí tu espada desde la Jerarquía")]
+    public GameObject espadaObj;
+    [Tooltip("Arrastra aquí tu escudo desde la Jerarquía")]
+    public GameObject escudoObj;
+    public float tiempoAparicionArmas = 0.5f; 
+    
+    [Tooltip("Tamaño máximo que alcanzarán las armas al terminar de rezar")]
+    public Vector3 tamanoFinalArmas = new Vector3(0.5f, 0.5f, 0.5f);
     
     private bool isMoving = false;
     private bool isDead = false;
     private bool isAttacking = false;
     private bool isDefending = false;
     private bool isHurt = false;
+    private bool estabaRezando = false;
     
     private Animator anim;
     private LevelManager levelManager;
@@ -29,6 +40,59 @@ public class GridMovement : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (anim == null) return;
+
+        bool estaRezando = anim.GetCurrentAnimatorStateInfo(0).IsName("pray");
+
+        if (estaRezando && !estabaRezando)
+        {
+            OcultarArmas();
+            estabaRezando = true;
+        }
+        else if (!estaRezando && estabaRezando)
+        {
+            StartCoroutine(AparecerArmasProgresivamente());
+            estabaRezando = false;
+        }
+    }
+
+    private void OcultarArmas()
+    {
+        if (espadaObj != null) espadaObj.SetActive(false);
+        if (escudoObj != null) escudoObj.SetActive(false);
+    }
+
+    private IEnumerator AparecerArmasProgresivamente()
+    {
+        if (espadaObj != null)
+        {
+            espadaObj.SetActive(true);
+            espadaObj.transform.localScale = Vector3.zero; 
+        }
+        if (escudoObj != null)
+        {
+            escudoObj.SetActive(true);
+            escudoObj.transform.localScale = Vector3.zero;
+        }
+
+        float t = 0f;
+        while (t < tiempoAparicionArmas)
+        {
+            t += Time.deltaTime;
+            float progreso = t / tiempoAparicionArmas;
+
+            if (espadaObj != null) espadaObj.transform.localScale = Vector3.Lerp(Vector3.zero, tamanoFinalArmas, progreso);
+            if (escudoObj != null) escudoObj.transform.localScale = Vector3.Lerp(Vector3.zero, tamanoFinalArmas, progreso);
+
+            yield return null;
+        }
+
+        if (espadaObj != null) espadaObj.transform.localScale = tamanoFinalArmas;
+        if (escudoObj != null) escudoObj.transform.localScale = tamanoFinalArmas;
+    }
+
     public void ConfigurarPaso(float nuevoPaso)
     {
         step_size = nuevoPaso;
@@ -42,6 +106,10 @@ public class GridMovement : MonoBehaviour
         isAttacking = false;
         isDefending = false;
         isHurt = false;
+        estabaRezando = false;
+
+        if (espadaObj != null) { espadaObj.SetActive(true); espadaObj.transform.localScale = tamanoFinalArmas; }
+        if (escudoObj != null) { escudoObj.SetActive(true); escudoObj.transform.localScale = tamanoFinalArmas; }
 
         if (anim == null) anim = GetComponentInChildren<Animator>();
         if (anim != null)
@@ -69,6 +137,8 @@ public class GridMovement : MonoBehaviour
 
     public void SetDefending(bool def) 
     { 
+        if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray")) return;
+
         if (isDefending == def) return; 
         
         isDefending = def; 
@@ -77,6 +147,8 @@ public class GridMovement : MonoBehaviour
 
     public void Atacar() 
     { 
+        if (anim != null && anim.GetCurrentAnimatorStateInfo(0).IsName("pray")) return;
+
         if (isAttacking) return;
         StartCoroutine(RutinaAtaque()); 
     }
@@ -85,7 +157,6 @@ public class GridMovement : MonoBehaviour
     {
         isAttacking = true;
         
-        // 1. Guardamos la posición y rotación EXACTAS antes de movernos
         Vector3 posicionOriginal = transform.position;
         Quaternion rotacionOriginal = transform.rotation;
         
@@ -95,13 +166,12 @@ public class GridMovement : MonoBehaviour
             anim.SetTrigger("Atacar");
         }
         
-        yield return new WaitForSeconds(1.8f); 
+        yield return new WaitForSeconds(1.7f); 
         
         if (anim != null) 
         {
             anim.applyRootMotion = false; 
             
-            // 2. Le devolvemos la posición y orientación que guardamos
             transform.position = posicionOriginal;
             transform.rotation = rotacionOriginal;
         }
