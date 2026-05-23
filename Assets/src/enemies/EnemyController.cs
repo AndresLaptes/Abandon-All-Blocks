@@ -14,6 +14,10 @@ public class EnemyController : MonoBehaviour
     public float tiempoDash = 0.12f;         
     public float tiempoRecuperacion = 0.97f; 
 
+    [Header("Habilidades Especiales")]
+    [Tooltip("Pon aquí el prefab del charco. Solo el demonio de brea debería tenerlo.")]
+    public GameObject prefabRastroBrea; 
+
     private float blocSize;
     private LevelManager levelManager;
     private Transform player;
@@ -49,7 +53,6 @@ public class EnemyController : MonoBehaviour
         
         if (anim != null) anim.SetTrigger("Morir");
         
-
         if (spawner != null && spawner.enemigosActivos.Contains(this.gameObject))
         {
             spawner.enemigosActivos.Remove(this.gameObject);
@@ -214,6 +217,16 @@ public class EnemyController : MonoBehaviour
     {
         isMoving = true;
         if (anim != null) anim.SetBool("Caminando", true);
+
+        if (prefabRastroBrea != null)
+        {
+            Vector3 posRastro = new Vector3(
+                Mathf.Round(transform.position.x / blocSize) * blocSize,
+                transform.position.y + 0.05f, 
+                Mathf.Round(transform.position.z / blocSize) * blocSize
+            );
+            Instantiate(prefabRastroBrea, posRastro, Quaternion.identity);
+        }
 
         Vector3 direccionMirada = (destino - transform.position).normalized;
         if (direccionMirada != Vector3.zero)
