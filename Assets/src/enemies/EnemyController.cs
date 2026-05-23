@@ -49,6 +49,12 @@ public class EnemyController : MonoBehaviour
         
         if (anim != null) anim.SetTrigger("Morir");
         
+
+        if (spawner != null && spawner.enemigosActivos.Contains(this.gameObject))
+        {
+            spawner.enemigosActivos.Remove(this.gameObject);
+        }
+
         StartCoroutine(RutinaMuerte());
     }
 
@@ -68,10 +74,6 @@ public class EnemyController : MonoBehaviour
             yield return null;
         }
 
-        if (spawner != null && spawner.enemigosActivos.Contains(this.gameObject))
-        {
-            spawner.enemigosActivos.Remove(this.gameObject);
-        }
         Destroy(gameObject);
     }
 
@@ -227,7 +229,6 @@ public class EnemyController : MonoBehaviour
         {
             if (isDead) yield break; 
             tiempoPasado += Time.deltaTime;
-            // AQUI ESTABA EL ERROR. Ahora sí usamos "posicionInicial"
             transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / tiempoDeViajePorCasilla);
             yield return null;
         }

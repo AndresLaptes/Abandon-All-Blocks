@@ -10,7 +10,6 @@ public class LevelManager : MonoBehaviour
     public GameObject player;
     public float blocSize = 2f;
     
-    [Tooltip("Ajuste manual para subir o bajar al jugador si se hunde o flota")]
     public float offsetAlturaJugador = 0f; 
 
     [Header("Configuración de Niveles")]
@@ -337,10 +336,30 @@ public class LevelManager : MonoBehaviour
         int gridX = Mathf.RoundToInt(destino.x / blocSize);
         int gridZ = Mathf.RoundToInt(destino.z / blocSize);
         int index = actualLevelIndex - 1;
+        
         if (index < 0 || index >= nivelesJuego.Length) return false;
+        
         int size = nivelesJuego[index].sizeLevel;
+        
         if (gridX < -2 || gridX > 2) return true;
-        if (gridZ >= size) return !(gridZ == size && wallGenerator != null && gridX == wallGenerator.puertaCellX);
+        
+        if (gridZ >= size) 
+        {
+            bool esCeldaPuerta = (gridZ == size && wallGenerator != null && gridX == wallGenerator.puertaCellX);
+            
+            if (esCeldaPuerta)
+            {
+                if (enemySpawner != null && enemySpawner.enemigosActivos.Count > 0)
+                {
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            return true; 
+        }
+        
         return false;
     }
 
