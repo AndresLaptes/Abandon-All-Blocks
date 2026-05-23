@@ -107,4 +107,5 @@ MonoBehaviour:
   tiempoAnticipacion: 1.1
   tiempoDash: 0.12
   tiempoRecuperacion: 0.97
-  modoDebug: 0
+  prefabRastroBrea: {fileID: 4566317848398819461, guid: de53e866d853ed640acaadaff9820ceb,
+    type: 3}

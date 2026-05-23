@@ -34,7 +34,7 @@ MonoBehaviour:
   requieredEnemiesToDoor: 0
   numHerejes: 0
   numGargolas: 0
-  numBrea: 1
+  numBrea: 2
   numCoins: 5
   numTramps: 0
   allowedEnemyTypes: []

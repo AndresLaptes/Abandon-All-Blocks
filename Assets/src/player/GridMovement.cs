@@ -93,6 +93,7 @@ public class GridMovement : MonoBehaviour
         if (anim != null)
         {
             anim.applyRootMotion = false;
+            anim.speed = 1f; 
             anim.Rebind();
             anim.Update(0f);
             anim.SetBool("Caminando", false);
@@ -120,7 +121,6 @@ public class GridMovement : MonoBehaviour
         if (anim != null) anim.SetBool("Defendiendo", def); 
     }
 
-    // --- NUEVO: MINI DASH AL RECIBIR DAÑO MIENTRAS BLOQUEAS ---
     public void GolpeBloqueado()
     {
         if (!isMoving) StartCoroutine(RutinaRechazoDefensa());
@@ -130,12 +130,11 @@ public class GridMovement : MonoBehaviour
     {
         isMoving = true; 
         Vector3 posInicial = transform.position;
-        Vector3 posRetroceso = posInicial - (transform.forward * (step_size * 0.3f)); // Retrocede un 30% de la celda
+        Vector3 posRetroceso = posInicial - (transform.forward * (step_size * 0.3f)); 
         
         float dur = 0.15f;
         float t = 0;
         
-        // Empujón atrás
         while(t < dur) 
         { 
             t += Time.deltaTime; 
@@ -143,7 +142,6 @@ public class GridMovement : MonoBehaviour
             yield return null; 
         }
         
-        // Vuelve adelante
         t = 0;
         while(t < dur) 
         { 
@@ -176,10 +174,8 @@ public class GridMovement : MonoBehaviour
             anim.SetTrigger("Atacar");
         }
         
-        // Esperamos un instante pequeñito para que el ataque coincida visualmente con la espada
         yield return new WaitForSeconds(0.4f); 
 
-        
         Vector3 posFrente = transform.position + (transform.forward * step_size);
         posFrente.x = Mathf.Round(posFrente.x / step_size) * step_size;
         posFrente.z = Mathf.Round(posFrente.z / step_size) * step_size;
@@ -187,10 +183,9 @@ public class GridMovement : MonoBehaviour
         if (levelManager != null && levelManager.enemySpawner != null)
         {
             EnemyController enemigoTarget = levelManager.enemySpawner.ObtenerEnemigoEn(posFrente);
-            if (enemigoTarget != null) enemigoTarget.RecibirDano(); // One hit kill
+            if (enemigoTarget != null) enemigoTarget.RecibirDano(); 
         }
 
-        // Esperamos el resto de la animación de ataque (1.7 - 0.4 = 1.3)
         yield return new WaitForSeconds(1.3f); 
         
         if (anim != null) 
@@ -218,14 +213,33 @@ public class GridMovement : MonoBehaviour
             
             if (levelManager != null && levelManager.EsPared(destino)) return; 
 
+            if (levelManager != null && levelManager.enemySpawner != null)
+            {
+                if (levelManager.enemySpawner.HayEnemigoEn(destino, null)) return; 
+            }
+
+            float duracionReal = tiempoMovimiento;
+            Vector3 mitadCaja = new Vector3(step_size * 0.4f, 3f, step_size * 0.4f); 
+            Collider[] hits = Physics.OverlapBox(destino, mitadCaja);
+            
+            foreach (var hit in hits)
+            {
+                BreaTrail brea = hit.GetComponent<BreaTrail>();
+                if (brea != null)
+                {
+                    duracionReal *= brea.multiplicadorLentitud; 
+                    break;
+                }
+            }
+
             if (levelManager != null && levelManager.EsCeldaPuerta(destino))
             {
                 levelManager.IniciarAperturaPuerta();
-                StartCoroutine(MoverConRetraso(destino, tiempoMovimiento));
+                StartCoroutine(MoverConRetraso(destino, tiempoMovimiento, duracionReal));
             }
             else if (levelManager != null && levelManager.ExisteSueloEn(destino))
             {
-                StartCoroutine(MoverSuavemente(destino));
+                StartCoroutine(MoverSuavemente(destino, duracionReal));
             }
             else
             {
@@ -271,7 +285,7 @@ public class GridMovement : MonoBehaviour
         }
     }
     
-    private IEnumerator MoverConRetraso(Vector3 destino, float retraso)
+    private IEnumerator MoverConRetraso(Vector3 destino, float retraso, float duracionReal)
     {
         isMoving = true;
         float esperado = 0f;
@@ -280,37 +294,60 @@ public class GridMovement : MonoBehaviour
             esperado += Time.deltaTime;
             yield return null;
         }
-        if (anim != null) anim.SetBool("Caminando", true);
+        
+        if (anim != null) 
+        {
+            anim.SetBool("Caminando", true);
+            anim.speed = tiempoMovimiento / duracionReal;
+        }
+
         Vector3 posicionInicial = transform.position;
         float tiempoPasado = 0f;
-        while (tiempoPasado < tiempoMovimiento)
+
+        while (tiempoPasado < duracionReal)
         {
-            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / tiempoMovimiento);
+            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / duracionReal);
             tiempoPasado += Time.deltaTime;
             yield return null;
         }
+
         transform.position = destino;
-        if (anim != null) anim.SetBool("Caminando", false);
+
+        if (anim != null) 
+        {
+            anim.SetBool("Caminando", false);
+            anim.speed = 1f;
+        }
         isMoving = false;
     }
 
-    private IEnumerator MoverSuavemente(Vector3 destino)
+    private IEnumerator MoverSuavemente(Vector3 destino, float duracionReal)
     {
         isMoving = true;
-        if (anim != null) anim.SetBool("Caminando", true);
+        
+        if (anim != null) 
+        {
+            anim.SetBool("Caminando", true);
+            anim.speed = tiempoMovimiento / duracionReal; 
+        }
 
         Vector3 posicionInicial = transform.position;
         float tiempoPasado = 0f;
 
-        while (tiempoPasado < tiempoMovimiento)
+        while (tiempoPasado < duracionReal)
         {
-            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / tiempoMovimiento);
+            transform.position = Vector3.Lerp(posicionInicial, destino, tiempoPasado / duracionReal);
             tiempoPasado += Time.deltaTime;
             yield return null;
         }
 
         transform.position = destino;
-        if (anim != null) anim.SetBool("Caminando", false);
+        
+        if (anim != null) 
+        {
+            anim.SetBool("Caminando", false);
+            anim.speed = 1f; 
+        }
         isMoving = false;
     }
 }
