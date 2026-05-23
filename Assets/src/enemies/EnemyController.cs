@@ -53,6 +53,9 @@ public class EnemyController : MonoBehaviour
         
         if (anim != null) anim.SetTrigger("Morir");
         
+        if (AudioManager.instance != null) 
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxEnemigoMuerte);
+        
         if (spawner != null && spawner.enemigosActivos.Contains(this.gameObject))
         {
             spawner.enemigosActivos.Remove(this.gameObject);
@@ -116,7 +119,10 @@ public class EnemyController : MonoBehaviour
     {
         isAttacking = true;
         if (anim != null) anim.SetTrigger("Atacar");
-
+        
+        if (AudioManager.instance != null) 
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxEnemigoAtaque);
+        
         Vector3 posInicial = new Vector3(
             Mathf.Round(transform.position.x / blocSize) * blocSize,
             transform.position.y,
