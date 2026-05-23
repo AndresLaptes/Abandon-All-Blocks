@@ -1186,7 +1186,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -225}
-  m_SizeDelta: {x: 1025.5, y: 30}
+  m_SizeDelta: {x: 1025.5, y: 72.26}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &486930654
 MonoBehaviour:
@@ -1299,6 +1299,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 486930652}
   m_CullTransparentMesh: 1
+--- !u!1 &621367252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 621367254}
+  - component: {fileID: 621367253}
+  m_Layer: 0
+  m_Name: ControladorMusicaJuego
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &621367253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621367252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ecd7fb08481114086515f970ce9906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  musicaDeEstaEscena: {fileID: 8300000, guid: e0d60a0af3cd6e04e9aee0d318d71d77, type: 3}
+--- !u!4 &621367254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621367252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.49238655, y: 0.6508744, z: 0.69242126}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3788,3 +3833,4 @@ SceneRoots:
   - {fileID: 9100000003}
   - {fileID: 1118704067}
   - {fileID: 1767018364}
+  - {fileID: 621367254}
