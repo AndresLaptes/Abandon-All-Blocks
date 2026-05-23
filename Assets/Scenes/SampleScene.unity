@@ -1101,7 +1101,7 @@ MonoBehaviour:
   player: {fileID: 1700040685}
   blocSize: 2.5
   offsetAlturaJugador: 1
-  nivelInicialParaProbar: 10
+  nivelInicialParaProbar: 1
   prefabMoneda: {fileID: 148711598779066864, guid: ca975475be2642b4e99ee61880d3d635,
     type: 3}
   offsetAlturaMonedas: 2.75
@@ -1153,13 +1153,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd8760c71cca8d14e80417ac6af08987, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabHereje: {fileID: 4557191549330646675, guid: 4469399cebd4cca4ca5e68fa693f6de8,
+  prefabHereje: {fileID: 606081480542305626, guid: 2d78bb54104b84140a822a1aa69aa86d,
     type: 3}
-  prefabGargola: {fileID: 9073779576794048910, guid: 94c946204ee22534c8c270d62791666d,
+  prefabGargola: {fileID: 3678475545618553021, guid: 94c946204ee22534c8c270d62791666d,
     type: 3}
-  prefabBrea: {fileID: 4785464429355936785, guid: 617d3301b05d589428943e34db66ddb5,
+  prefabBrea: {fileID: 380055432937349205, guid: 617d3301b05d589428943e34db66ddb5,
     type: 3}
-  offsetAltura: 1.25
+  offsetAltura: 0.75
   enemigosActivos: []
 --- !u!4 &1449845799
 Transform:
@@ -1170,7 +1170,7 @@ Transform:
   m_GameObject: {fileID: 1449845797}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7755112, y: 9.73, z: -4.447659}
+  m_LocalPosition: {x: -0.7755112, y: 10.53, z: -4.447659}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

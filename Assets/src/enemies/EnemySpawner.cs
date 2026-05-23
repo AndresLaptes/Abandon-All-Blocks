@@ -10,7 +10,6 @@ public class EnemySpawner : MonoBehaviour
     public GameObject prefabBrea;
 
     [Header("Ajuste de Altura (Pies)")]
-    [Tooltip("Si los enemigos se hunden en el suelo, sube este valor (ej: 0.5 o 1.0). Si flotan, bájalo.")]
     public float offsetAltura = 0f;
 
     public List<GameObject> enemigosActivos = new List<GameObject>();
@@ -21,11 +20,32 @@ public class EnemySpawner : MonoBehaviour
         enemigosActivos.Clear();
     }
     
+    // Función nueva: Devuelve el enemigo exacto en una casilla
+    public EnemyController ObtenerEnemigoEn(Vector3 posDestino)
+    {
+        foreach (GameObject e in enemigosActivos)
+        {
+            if (e == null) continue;
+            EnemyController cerebro = e.GetComponent<EnemyController>();
+            if (cerebro != null && cerebro.IsDead()) continue; // Ignoramos muertos
+
+            if (Mathf.Abs(e.transform.position.x - posDestino.x) < 0.1f &&
+                Mathf.Abs(e.transform.position.z - posDestino.z) < 0.1f)
+            {
+                return cerebro;
+            }
+        }
+        return null;
+    }
+
     public bool HayEnemigoEn(Vector3 posDestino, GameObject enemigoQuePregunta)
     {
         foreach (GameObject e in enemigosActivos)
         {
             if (e == null || e == enemigoQuePregunta) continue;
+            
+            EnemyController cerebro = e.GetComponent<EnemyController>();
+            if (cerebro != null && cerebro.IsDead()) continue; // Los muertos no bloquean casillas
             
             if (Mathf.Abs(e.transform.position.x - posDestino.x) < 0.1f &&
                 Mathf.Abs(e.transform.position.z - posDestino.z) < 0.1f)
@@ -80,13 +100,8 @@ public class EnemySpawner : MonoBehaviour
             bool posicionValida = false;
 
             posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, blocSize, out posicionElegida);
-            
-            if (!posicionValida)
-                posicionValida = IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, blocSize, out posicionElegida);
-            
-            if (!posicionValida)
-                posicionValida = IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, blocSize, out posicionElegida);
-
+            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, blocSize, out posicionElegida);
+            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, blocSize, out posicionElegida);
             if (!posicionValida)
             {
                 posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, 0f, out posicionElegida) ||
@@ -118,7 +133,6 @@ public class EnemySpawner : MonoBehaviour
                 }
 
                 enemigosActivos.Add(instanciaEnemigo);
-
                 EnemyController cerebro = instanciaEnemigo.GetComponent<EnemyController>();
                 if (cerebro != null) cerebro.Inicializar(blocSize, manager, manager.player.transform, this);
             }
@@ -138,7 +152,6 @@ public class EnemySpawner : MonoBehaviour
                 float distX = Mathf.Abs(celda.x - ocupada.x);
                 float distZ = Mathf.Abs(celda.z - ocupada.z);
 
-               
                 if (distX < tamañoBloque * 1.1f && distZ < tamañoBloque * 1.1f)
                 {
                     demasiadoCerca = true;
