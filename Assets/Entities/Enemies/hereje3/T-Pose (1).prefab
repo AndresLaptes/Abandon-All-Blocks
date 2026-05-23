@@ -121,8 +121,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tiempoDeViajePorCasilla: 0.5
-  tiempoEsperaMinimo: 0.5
-  tiempoEsperaMaximo: 1.5
+  tiempoEsperaMinimo: 2
+  tiempoEsperaMaximo: 6
   distanciaRetroceso: 0.3
   tiempoAnticipacion: 0.1
   tiempoDash: 0.07

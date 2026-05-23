@@ -5,6 +5,7 @@ public class PlayerHealth : MonoBehaviour
 {
     public int vidasMaximas = 3;
     private int vidasActuales;
+    private bool isDead;
 
     [Header("Impacto e Invulnerabilidad")]
     public float tiempoInvulnerabilidad = 1.5f;
@@ -18,6 +19,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        isDead = false;
         vidasActuales = vidasMaximas;
         movimiento = GetComponent<GridMovement>();
         anim = GetComponentInChildren<Animator>();
@@ -31,11 +33,28 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (transform.position.y <= -2f && !isDead)
+        {
+            CaerAlVacio();
+        }
+    }
+    
+    private void CaerAlVacio()
+    {
+        vidasActuales = 0;
+        isDead = true;
+        vidasActuales = 0; 
+        hudCorazones.ActualizarVidasHUD(vidasActuales);
+
+        StartCoroutine(RutinaMuerteYRespawn());
+    }
+    
     public void RecibirDano()
     {
         if (vidasActuales <= 0 || !movimiento.enabled || esInvulnerable || movimiento.IsDead()) return; 
 
-        // NUEVO: Ejecuta el dash de defensa
         if (movimiento.IsDefending()) 
         {
             movimiento.GolpeBloqueado();
