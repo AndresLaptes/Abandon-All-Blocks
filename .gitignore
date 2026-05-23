@@ -113,3 +113,6 @@ CLAUDE.md
 Assets/TutorialInfo/
 
 skills-lock.json
+
+# Backup local de configuración de niveles (no se commitea)
+NIVELES_BACKUP.md

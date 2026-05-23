@@ -2040,17 +2040,17 @@ MonoBehaviour:
     type: 3}
   prefabPinchos: {fileID: 466509697270999302, guid: 63b7ff85efc25fa4dac72281d56f050b,
     type: 3}
-  prefabHacha: {fileID: 2075823937460348102, guid: 955a1d0be9a0f25428b3ad3efe25f754,
+  prefabHacha: {fileID: 4073024435231887436, guid: 89e31709ca74ce0418d472276b8bd895,
     type: 3}
-  alturaSpawnPinchos: 1
-  alturaSpawnHachas: 4
+  alturaSpawnPinchos: 2
+  alturaSpawnHachas: 6
   desfasarHachas: 1
   retrasoRespawn: 2
   retrasoInicial: 0.5
-  offsetSpawnEnCeldas: 0
-  alturaSpawn: 1.75
+  offsetSpawnEnCeldas: 0.5
+  alturaSpawn: 3
   velocidadTronco: 4
-  velocidadAngular: 360
+  velocidadAngular: -360
 --- !u!4 &9100000003
 Transform:
   m_ObjectHideFlags: 0
