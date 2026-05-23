@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   yReposo: -0.5
-  yActivo: 0.5
+  yActivo: 1.5
   tiempoSubida: 0.15
   tiempoArriba: 1
   tiempoBajada: 0.3
@@ -56,10 +56,10 @@ MonoBehaviour:
   numPinchos: 5
   patronOffsets:
   - {x: 0, y: 0}
-  - {x: -1, y: -1}
-  - {x: 1, y: -1}
-  - {x: -1, y: 1}
-  - {x: 1, y: 1}
+  - {x: -1.5, y: -1.5}
+  - {x: 1.5, y: -1.5}
+  - {x: -1.5, y: 1.5}
+  - {x: 1.5, y: 1.5}
 --- !u!1001 &5531489873468313808
 PrefabInstance:
   m_ObjectHideFlags: 0

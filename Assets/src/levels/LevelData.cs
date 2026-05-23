@@ -22,40 +22,45 @@ public class LevelData : ScriptableObject
 
     private void OnValidate()
     {
-        // Si cambiamos el sizeLevel en el inspector, redimensionamos la matriz
-        if (filas == null || filas.Length != sizeLevel)
-        {
-            filas = new LevelRow[sizeLevel];
+        if (sizeLevel < 1) sizeLevel = 1;
+        filas = RedimensionarPreservando(filas, sizeLevel, 1);
+        gridPinchos = RedimensionarPreservando(gridPinchos, sizeLevel, 0);
+        gridHachas = RedimensionarPreservando(gridHachas, sizeLevel, 0);
+    }
 
-            for (int i = 0; i < sizeLevel; i++)
+    private static LevelRow[] RedimensionarPreservando(LevelRow[] viejas, int nuevoTamanio, int valorDefault)
+    {
+        if (viejas != null && viejas.Length == nuevoTamanio)
+        {
+            // Tamaño correcto: solo asegurar que cada fila tiene 5 columnas
+            for (int i = 0; i < viejas.Length; i++)
             {
-                filas[i] = new LevelRow();
-                for (int j = 0; j < 5; j++)
+                if (viejas[i] == null) viejas[i] = NuevaFila(valorDefault);
+                else if (viejas[i].columnas == null || viejas[i].columnas.Length != 5)
                 {
-                    filas[i].columnas[j] = 1; // Rellenamos con 1 por defecto
+                    viejas[i].columnas = new int[5];
+                    for (int j = 0; j < 5; j++) viejas[i].columnas[j] = valorDefault;
                 }
             }
+            return viejas;
         }
 
-        if (gridPinchos == null || gridPinchos.Length != sizeLevel)
+        LevelRow[] nuevas = new LevelRow[nuevoTamanio];
+        for (int i = 0; i < nuevoTamanio; i++)
         {
-            gridPinchos = new LevelRow[sizeLevel];
-            for (int i = 0; i < sizeLevel; i++)
-            {
-                gridPinchos[i] = new LevelRow();
-                for (int j = 0; j < 5; j++) gridPinchos[i].columnas[j] = 0;
-            }
+            if (viejas != null && i < viejas.Length && viejas[i] != null && viejas[i].columnas != null && viejas[i].columnas.Length == 5)
+                nuevas[i] = viejas[i];
+            else
+                nuevas[i] = NuevaFila(valorDefault);
         }
+        return nuevas;
+    }
 
-        if (gridHachas == null || gridHachas.Length != sizeLevel)
-        {
-            gridHachas = new LevelRow[sizeLevel];
-            for (int i = 0; i < sizeLevel; i++)
-            {
-                gridHachas[i] = new LevelRow();
-                for (int j = 0; j < 5; j++) gridHachas[i].columnas[j] = 0;
-            }
-        }
+    private static LevelRow NuevaFila(int valorDefault)
+    {
+        LevelRow r = new LevelRow();
+        for (int j = 0; j < 5; j++) r.columnas[j] = valorDefault;
+        return r;
     }
 
     [Header("Aspecto")]
