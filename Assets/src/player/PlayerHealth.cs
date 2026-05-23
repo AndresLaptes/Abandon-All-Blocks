@@ -99,24 +99,19 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator RutinaMuerteYRespawn()
     {
-        // 1. Bloqueamos inputs y enviamos la animación de muerte
         movimiento.SetDead(true);
         if (anim != null) anim.SetTrigger("Morir");
 
-        // 2. Esperamos a que la animación de muerte se reproduzca entera
         yield return new WaitForSeconds(3f);
         
-        // 3. Restauramos las vidas para el respawn
-        vidasActuales = vidasMaximas;
-        if (hudCorazones != null) hudCorazones.ActualizarVidasHUD(vidasActuales);
-
-        // 4. Reposicionamos y forzamos el reset de las animaciones a Idle
-        manager.PosicionarJugador();
-        movimiento.SetDead(false);
-        if (anim != null) 
+        GameOverManager goManager = FindObjectOfType<GameOverManager>();
+        if (goManager != null)
         {
-            anim.Rebind();
-            anim.Update(0f);
+            goManager.MostrarGameOver();
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }
     }
 }
