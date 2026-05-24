@@ -182,8 +182,7 @@ public class GridMovement : MonoBehaviour
 
         if (levelManager != null && levelManager.enemySpawner != null)
         {
-            EnemyController enemigoTarget = levelManager.enemySpawner.ObtenerEnemigoEn(posFrente);
-            if (enemigoTarget != null) enemigoTarget.RecibirDano(); 
+            levelManager.enemySpawner.AtacarCelda(posFrente);
         }
 
         yield return new WaitForSeconds(1.3f); 
@@ -246,6 +245,12 @@ public class GridMovement : MonoBehaviour
                 StartCoroutine(CaerAlVacioParabola(direction));
             }
         }
+    }
+
+    public void CaerEnSitio()
+    {
+        if (isDead) return;
+        StartCoroutine(CaerAlVacioParabola(Vector3.zero));
     }
 
     private IEnumerator CaerAlVacioParabola(Vector3 direction)

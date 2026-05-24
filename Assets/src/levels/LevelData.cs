@@ -83,6 +83,7 @@ public class LevelData : ScriptableObject
     public int numHerejes;
     public int numGargolas;
     public int numBrea;
+    public int numBoss;
     public int numCoins;
     public int numTramps;
 

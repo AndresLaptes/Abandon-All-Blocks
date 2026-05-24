@@ -34,6 +34,8 @@ public class LevelManager : MonoBehaviour
     private int[,] flowField;
     private float flowFieldTimer = 0f;
 
+    private Coroutine rutinaCaidaSuelo;
+
     private HUDContadorSala hudSala;
 
     void Awake()
@@ -62,7 +64,7 @@ public class LevelManager : MonoBehaviour
     void Update()
     {
         if (nivelesJuego == null || nivelesJuego.Length == 0 || player == null) return;
-        
+
         flowFieldTimer += Time.deltaTime;
         if (flowFieldTimer >= 0.15f)
         {
@@ -74,14 +76,37 @@ public class LevelManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Alpha0 + i) || Input.GetKeyDown(KeyCode.Keypad0 + i))
             {
-                int targetIndex = (i == 0) ? 9 : i - 1; 
-                
+                int targetIndex = (i == 0) ? 9 : i - 1;
+
                 if (targetIndex >= 0 && targetIndex < nivelesJuego.Length)
                 {
                     actualLevelIndex = targetIndex;
                     cargarSigueinteNivel();
                 }
             }
+        }
+
+        ChequearSueloBajoPlayer();
+    }
+
+    private void ChequearSueloBajoPlayer()
+    {
+        if (rutinaCaidaSuelo == null) return;
+        if (player == null) return;
+
+        GridMovement mov = player.GetComponent<GridMovement>();
+        if (mov == null || mov.IsDead() || mov.IsMoving()) return;
+
+        Vector3 p = player.transform.position;
+        Vector3 celdaAlineada = new Vector3(
+            Mathf.Round(p.x / blocSize) * blocSize,
+            p.y,
+            Mathf.Round(p.z / blocSize) * blocSize
+        );
+
+        if (!ExisteSueloEn(celdaAlineada))
+        {
+            mov.CaerEnSitio();
         }
     }
 
@@ -139,6 +164,12 @@ public class LevelManager : MonoBehaviour
         if (trampaSpawner != null)
         {
             trampaSpawner.GenerarTrampas(datoSala, blocSize, this);
+        }
+
+        if (rutinaCaidaSuelo != null) { StopCoroutine(rutinaCaidaSuelo); rutinaCaidaSuelo = null; }
+        if (datoSala.floorFall)
+        {
+            rutinaCaidaSuelo = StartCoroutine(RutinaCaidaDeFilas(datoSala));
         }
 
         GenerarMonedas(datoSala);
@@ -268,6 +299,7 @@ public class LevelManager : MonoBehaviour
                 tile.transform.localScale = new Vector3(blocSize, blocSize, blocSize);
                 tile.SetActive(false);
                 tile.transform.SetParent(transform);
+                if (tile.GetComponent<VoxelTiles>() == null) tile.AddComponent<VoxelTiles>();
                 tilePool.Enqueue(tile);
             }
         }
@@ -299,7 +331,49 @@ public class LevelManager : MonoBehaviour
         activeTilesInRoom.Add(tileObj);
     }
 
-    public void ReturnTileToPool(GameObject tile) { tile.SetActive(false); tilePool.Enqueue(tile); }
+    public void ReturnTileToPool(GameObject tile)
+    {
+        tile.SetActive(false);
+        activeTilesInRoom.Remove(tile);
+        tilePool.Enqueue(tile);
+    }
+
+    private IEnumerator RutinaCaidaDeFilas(LevelData datoSala)
+    {
+        Animator animPlayer = player != null ? player.GetComponentInChildren<Animator>() : null;
+        if (animPlayer != null)
+        {
+            yield return null;
+            float maxEspera = 15f;
+            float esperado = 0f;
+            while (esperado < maxEspera && animPlayer.GetCurrentAnimatorStateInfo(0).IsName("pray"))
+            {
+                esperado += Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        float intervalo = Mathf.Max(0.1f, datoSala.fallFloorVelocity);
+        const float tiempoTemblor = 1f;
+
+        for (int z = -1; z < datoSala.sizeLevel; z++)
+        {
+            yield return new WaitForSeconds(intervalo);
+
+            float posZ = z * blocSize;
+            foreach (GameObject tile in activeTilesInRoom)
+            {
+                if (tile == null) continue;
+                if (Mathf.Abs(tile.transform.position.z - posZ) > 0.15f) continue;
+                VoxelTiles vt = tile.GetComponent<VoxelTiles>();
+                if (vt != null) vt.StartFalling(tiempoTemblor);
+            }
+
+            if (trampaSpawner != null && z >= 0) trampaSpawner.HacerCaerEnFila(z);
+        }
+
+        rutinaCaidaSuelo = null;
+    }
 
     public bool ExisteSueloEn(Vector3 destino)
     {
@@ -311,7 +385,11 @@ public class LevelManager : MonoBehaviour
             if (gridZ == nivelesJuego[index].sizeLevel && wallGenerator != null && gridX == wallGenerator.puertaCellX) return true;
         }
         foreach (GameObject tile in activeTilesInRoom)
-            if (Mathf.Abs(tile.transform.position.x - destino.x) < 0.1f && Mathf.Abs(tile.transform.position.z - destino.z) < 0.1f) return true;
+        {
+            if (tile == null) continue;
+            if (tile.transform.position.y < -0.5f) continue;
+            if (Mathf.Abs(tile.transform.position.x - destino.x) < 0.15f && Mathf.Abs(tile.transform.position.z - destino.z) < 0.15f) return true;
+        }
         return false;
     }
 
@@ -363,6 +441,23 @@ public class LevelManager : MonoBehaviour
         return false;
     }
 
+    private bool HayTrampaEn(Vector3 pos, LevelData datoSala)
+    {
+        int gridX = Mathf.RoundToInt(pos.x / blocSize) + 2;
+        int gridZ = Mathf.RoundToInt(pos.z / blocSize);
+        if (gridX < 0 || gridX >= 5 || gridZ < 0 || gridZ >= datoSala.sizeLevel) return false;
+
+        if (datoSala.gridPinchos != null && gridZ < datoSala.gridPinchos.Length
+            && datoSala.gridPinchos[gridZ] != null
+            && datoSala.gridPinchos[gridZ].columnas[gridX] == 1) return true;
+
+        if (datoSala.gridHachas != null && gridZ < datoSala.gridHachas.Length
+            && datoSala.gridHachas[gridZ] != null
+            && datoSala.gridHachas[gridZ].columnas[gridX] == 1) return true;
+
+        return false;
+    }
+
     private void GenerarMonedas(LevelData datoSala)
     {
         if (prefabMoneda == null || activeTilesInRoom.Count == 0) return;
@@ -372,11 +467,12 @@ public class LevelManager : MonoBehaviour
         foreach (GameObject tile in activeTilesInRoom)
         {
             Vector3 pos = tile.transform.position;
-            
-            if (pos.z < 0) continue; 
+
+            if (pos.z < 0) continue;
             if (EsPared(pos)) continue;
             if (enemySpawner != null && enemySpawner.HayEnemigoEn(pos, null)) continue;
-            
+            if (HayTrampaEn(pos, datoSala)) continue;
+
             casillasVacias.Add(tile);
         }
 

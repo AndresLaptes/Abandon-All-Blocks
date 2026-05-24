@@ -22,11 +22,13 @@ public class TrampaHacha : MonoBehaviour
     private Transform player;
     private PlayerHealth playerHealth;
     private bool inicializada = false;
+    private EnemySpawner enemySpawner;
 
     public void Inicializar(Transform jugador)
     {
         player = jugador;
         if (player != null) playerHealth = player.GetComponent<PlayerHealth>();
+        enemySpawner = FindObjectOfType<EnemySpawner>();
         rotacionBase = transform.localRotation;
         inicializada = true;
     }
@@ -42,6 +44,13 @@ public class TrampaHacha : MonoBehaviour
         if (playerHealth != null && player != null && PlayerEnContacto())
         {
             playerHealth.RecibirDano();
+        }
+
+        if (enemySpawner != null)
+        {
+            Vector3 puntaFilo = transform.position + transform.rotation * (Vector3.down * longitudHacha);
+            Vector3 centroXZ = new Vector3((transform.position.x + puntaFilo.x) * 0.5f, 0f, (transform.position.z + puntaFilo.z) * 0.5f);
+            enemySpawner.DaniarEnemigosEnArea(centroXZ, radioDano);
         }
     }
 

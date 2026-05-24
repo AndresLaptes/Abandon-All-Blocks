@@ -63,10 +63,10 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator RutinaMuerte()
     {
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(0.8f);
 
         float t = 0;
-        float duracionHundimiento = 2f;
+        float duracionHundimiento = 0.6f;
         Vector3 posOriginal = transform.position;
         Vector3 posFinal = posOriginal + Vector3.down * (blocSize * 1.5f);
 
