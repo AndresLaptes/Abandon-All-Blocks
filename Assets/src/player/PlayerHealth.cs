@@ -63,6 +63,9 @@ public class PlayerHealth : MonoBehaviour
 
         vidasActuales--;
         
+        if (AudioManager.instance != null) 
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxRecibirDano);
+        
         if (hudCorazones != null)
         {
             hudCorazones.ActualizarVidasHUD(vidasActuales);
@@ -120,7 +123,10 @@ public class PlayerHealth : MonoBehaviour
     {
         movimiento.SetDead(true);
         if (anim != null) anim.SetTrigger("Morir");
-
+        
+        if (AudioManager.instance != null) 
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxMuerte);
+        
         yield return new WaitForSeconds(3f);
         
         GameOverManager goManager = FindObjectOfType<GameOverManager>();

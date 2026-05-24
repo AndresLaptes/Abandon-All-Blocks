@@ -174,6 +174,11 @@ public class GridMovement : MonoBehaviour
             anim.SetTrigger("Atacar");
         }
         
+        if (AudioManager.instance != null) 
+        {
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxAtaque);
+        }
+        
         yield return new WaitForSeconds(0.4f); 
 
         Vector3 posFrente = transform.position + (transform.forward * step_size);
