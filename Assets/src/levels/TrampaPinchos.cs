@@ -37,11 +37,13 @@ public class TrampaPinchos : MonoBehaviour
     private Transform player;
     private PlayerHealth playerHealth;
     private bool inicializada = false;
+    private EnemySpawner enemySpawner;
 
     public void Inicializar(Transform jugador)
     {
         player = jugador;
         if (player != null) playerHealth = player.GetComponent<PlayerHealth>();
+        enemySpawner = FindObjectOfType<EnemySpawner>();
 
         if (autoReplicar && transform.childCount > 0 && numPinchos > 0 && patronOffsets != null && patronOffsets.Length > 0)
         {
@@ -82,28 +84,47 @@ public class TrampaPinchos : MonoBehaviour
 
     void Update()
     {
-        if (!inicializada || !armada || player == null) return;
+        if (!inicializada || !armada) return;
 
-        Vector3 a = new Vector3(transform.position.x, 0f, transform.position.z);
-        Vector3 b = new Vector3(player.position.x, 0f, player.position.z);
-        if (Vector3.Distance(a, b) < radioActivacion)
+        if (HayObjetivoEnRadio())
         {
             armada = false;
             StartCoroutine(CicloActivacion());
         }
     }
 
+    private bool HayObjetivoEnRadio()
+    {
+        Vector3 a = new Vector3(transform.position.x, 0f, transform.position.z);
+        if (player != null)
+        {
+            Vector3 b = new Vector3(player.position.x, 0f, player.position.z);
+            if (Vector3.Distance(a, b) < radioActivacion) return true;
+        }
+        if (enemySpawner != null)
+        {
+            foreach (GameObject e in enemySpawner.enemigosActivos)
+            {
+                if (e == null) continue;
+                Vector3 c = new Vector3(e.transform.position.x, 0f, e.transform.position.z);
+                if (Vector3.Distance(a, c) < radioActivacion) return true;
+            }
+        }
+        return false;
+    }
+
     private IEnumerator CicloActivacion()
     {
         yield return MoverPinchos(yReposo, yActivo, tiempoSubida);
 
+        Vector3 centro = new Vector3(transform.position.x, 0f, transform.position.z);
         if (playerHealth != null && player != null)
         {
-            Vector3 a = new Vector3(transform.position.x, 0f, transform.position.z);
             Vector3 b = new Vector3(player.position.x, 0f, player.position.z);
-            if (Vector3.Distance(a, b) < radioActivacion)
+            if (Vector3.Distance(centro, b) < radioActivacion)
                 playerHealth.RecibirDano();
         }
+        if (enemySpawner != null) enemySpawner.DaniarEnemigosEnArea(centro, radioActivacion);
 
         yield return new WaitForSeconds(tiempoArriba);
         yield return MoverPinchos(yActivo, yReposo, tiempoBajada);

@@ -1512,7 +1512,7 @@ MonoBehaviour:
   player: {fileID: 1700040685}
   blocSize: 2.5
   offsetAlturaJugador: 1
-  nivelInicialParaProbar: 1
+  nivelInicialParaProbar: 4
   prefabMoneda: {fileID: 148711598779066864, guid: ca975475be2642b4e99ee61880d3d635,
     type: 3}
   offsetAlturaMonedas: 2.75
@@ -1820,6 +1820,8 @@ MonoBehaviour:
     type: 3}
   prefabBrea: {fileID: 380055432937349205, guid: 617d3301b05d589428943e34db66ddb5,
     type: 3}
+  prefabBoss: {fileID: 5944129617046528505, guid: fe6b35bb655534b428d30aff83d51b19,
+    type: 3}
   offsetAltura: 0.75
   enemigosActivos: []
 --- !u!4 &1449845799
@@ -1831,7 +1833,7 @@ Transform:
   m_GameObject: {fileID: 1449845797}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7755112, y: 10.53, z: -4.447659}
+  m_LocalPosition: {x: -1.37, y: 8.05, z: -4.447659}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

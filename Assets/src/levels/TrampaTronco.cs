@@ -20,6 +20,7 @@ public class TrampaTronco : MonoBehaviour
 
     [HideInInspector] public bool activo = false;
     private bool cayendo = false;
+    private EnemySpawner enemySpawner;
     private float velocidadVertical = 0f;
     private float xLimite;
     private Transform player;
@@ -33,6 +34,7 @@ public class TrampaTronco : MonoBehaviour
 
         player = jugador;
         if (player != null) playerHealth = player.GetComponent<PlayerHealth>();
+        enemySpawner = FindObjectOfType<EnemySpawner>();
     }
 
     void Update()
@@ -59,14 +61,15 @@ public class TrampaTronco : MonoBehaviour
             }
         }
 
-        if (!cayendo && playerHealth != null && player != null)
+        if (!cayendo)
         {
             Vector3 a = new Vector3(transform.position.x, 0f, transform.position.z);
-            Vector3 b = new Vector3(player.position.x, 0f, player.position.z);
-            if (Vector3.Distance(a, b) < radioDano)
+            if (playerHealth != null && player != null)
             {
-                playerHealth.RecibirDano();
+                Vector3 b = new Vector3(player.position.x, 0f, player.position.z);
+                if (Vector3.Distance(a, b) < radioDano) playerHealth.RecibirDano();
             }
+            if (enemySpawner != null) enemySpawner.DaniarEnemigosEnArea(a, radioDano);
         }
     }
 }

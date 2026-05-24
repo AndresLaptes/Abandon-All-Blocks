@@ -8,6 +8,7 @@ public class EnemySpawner : MonoBehaviour
     public GameObject prefabHereje;
     public GameObject prefabGargola;
     public GameObject prefabBrea;
+    public GameObject prefabBoss;
 
     [Header("Ajuste de Altura (Pies)")]
     public float offsetAltura = 0f;
@@ -38,6 +39,56 @@ public class EnemySpawner : MonoBehaviour
         return null;
     }
 
+    // Daña a cualquier enemigo (no boss) cuyo XZ esté dentro del radio dado.
+    public int DaniarEnemigosEnArea(Vector3 centro, float radio)
+    {
+        int golpeados = 0;
+        foreach (GameObject e in enemigosActivos)
+        {
+            if (e == null) continue;
+            if (e.GetComponent<BossController>() != null) continue;
+            EnemyController ec = e.GetComponent<EnemyController>();
+            if (ec == null || ec.IsDead()) continue;
+
+            float dx = e.transform.position.x - centro.x;
+            float dz = e.transform.position.z - centro.z;
+            if (dx * dx + dz * dz <= radio * radio)
+            {
+                ec.RecibirDano();
+                golpeados++;
+            }
+        }
+        return golpeados;
+    }
+
+    // Daña al enemigo (cualquier tipo: EnemyController o BossController) que esté en la celda indicada.
+    // Devuelve true si golpeó algo.
+    public bool AtacarCelda(Vector3 posDestino, float tolerancia = 1.0f)
+    {
+        foreach (GameObject e in enemigosActivos)
+        {
+            if (e == null) continue;
+            if (Mathf.Abs(e.transform.position.x - posDestino.x) > tolerancia) continue;
+            if (Mathf.Abs(e.transform.position.z - posDestino.z) > tolerancia) continue;
+
+            BossController boss = e.GetComponent<BossController>();
+            if (boss != null)
+            {
+                if (boss.IsDead()) continue;
+                boss.RecibirDano();
+                return true;
+            }
+
+            EnemyController enemy = e.GetComponent<EnemyController>();
+            if (enemy != null && !enemy.IsDead())
+            {
+                enemy.RecibirDano();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public bool HayEnemigoEn(Vector3 posDestino, GameObject enemigoQuePregunta)
     {
         foreach (GameObject e in enemigosActivos)
@@ -60,7 +111,7 @@ public class EnemySpawner : MonoBehaviour
     {
         LimpiarEnemigos();
 
-        int totalEnemigos = datos.numHerejes + datos.numGargolas + datos.numBrea;
+        int totalEnemigos = datos.numHerejes + datos.numGargolas + datos.numBrea + datos.numBoss;
         if (totalEnemigos == 0) return;
         if (datos.filas == null || datos.filas.Length <= 1) return;
 
@@ -89,6 +140,7 @@ public class EnemySpawner : MonoBehaviour
         for (int i = 0; i < datos.numHerejes; i++) if (prefabHereje != null) bolsaEnemigos.Add(prefabHereje);
         for (int i = 0; i < datos.numGargolas; i++) if (prefabGargola != null) bolsaEnemigos.Add(prefabGargola);
         for (int i = 0; i < datos.numBrea; i++) if (prefabBrea != null) bolsaEnemigos.Add(prefabBrea);
+        for (int i = 0; i < datos.numBoss; i++) if (prefabBoss != null) bolsaEnemigos.Add(prefabBoss);
 
         DesordenarLista(bolsaEnemigos); 
 
@@ -133,8 +185,17 @@ public class EnemySpawner : MonoBehaviour
                 }
 
                 enemigosActivos.Add(instanciaEnemigo);
-                EnemyController cerebro = instanciaEnemigo.GetComponent<EnemyController>();
-                if (cerebro != null) cerebro.Inicializar(blocSize, manager, manager.player.transform, this);
+
+                BossController boss = instanciaEnemigo.GetComponent<BossController>();
+                if (boss != null)
+                {
+                    boss.Inicializar(blocSize, manager, manager.player.transform);
+                }
+                else
+                {
+                    EnemyController cerebro = instanciaEnemigo.GetComponent<EnemyController>();
+                    if (cerebro != null) cerebro.Inicializar(blocSize, manager, manager.player.transform, this);
+                }
             }
         }
     }

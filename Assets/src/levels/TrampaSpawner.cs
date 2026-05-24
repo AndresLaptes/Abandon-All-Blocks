@@ -41,6 +41,8 @@ public class TrampaSpawner : MonoBehaviour
     private List<GameObject> trampasActivas = new List<GameObject>();
     private List<GameObject> pinchosActivos = new List<GameObject>();
     private List<GameObject> hachasActivas = new List<GameObject>();
+    private HashSet<int> filasMuertas = new HashSet<int>();
+    private float blocSizeCacheado = 2.5f;
 
     public void LimpiarTrampas()
     {
@@ -55,15 +57,46 @@ public class TrampaSpawner : MonoBehaviour
 
         foreach (var h in hachasActivas) if (h != null) Destroy(h);
         hachasActivas.Clear();
+
+        filasMuertas.Clear();
     }
 
     public void GenerarTrampas(LevelData datos, float blocSize, LevelManager manager)
     {
         LimpiarTrampas();
+        blocSizeCacheado = blocSize;
 
         GenerarTroncos(datos, blocSize, manager);
         GenerarPinchos(datos, blocSize, manager);
         GenerarHachas(datos, blocSize, manager);
+    }
+
+    public void HacerCaerEnFila(int filaZ)
+    {
+        filasMuertas.Add(filaZ);
+        float posZ = filaZ * blocSizeCacheado;
+
+        foreach (GameObject p in pinchosActivos)
+        {
+            if (p == null) continue;
+            if (Mathf.Abs(p.transform.position.z - posZ) < blocSizeCacheado * 0.5f) HacerCaer(p);
+        }
+
+        foreach (GameObject t in trampasActivas)
+        {
+            if (t == null) continue;
+            if (Mathf.Abs(t.transform.position.z - posZ) < blocSizeCacheado * 0.5f) HacerCaer(t);
+        }
+    }
+
+    private void HacerCaer(GameObject obj)
+    {
+        if (obj.GetComponent<CaidaSimple>() != null) return;
+        foreach (MonoBehaviour mb in obj.GetComponents<MonoBehaviour>())
+        {
+            if (mb != null) mb.enabled = false;
+        }
+        obj.AddComponent<CaidaSimple>();
     }
 
     private void GenerarTroncos(LevelData datos, float blocSize, LevelManager manager)
@@ -134,6 +167,7 @@ public class TrampaSpawner : MonoBehaviour
     private IEnumerator BucleSpawn(int fila, float blocSize, LevelManager manager)
     {
         yield return new WaitForSeconds(retrasoInicial);
+        if (filasMuertas.Contains(fila)) yield break;
 
         GameObject activo = SpawnTroncoIdle(fila, blocSize, manager);
         Activar(activo);
@@ -141,10 +175,12 @@ public class TrampaSpawner : MonoBehaviour
 
         while (true)
         {
-            while (activo != null) yield return null;
+            while (activo != null && !filasMuertas.Contains(fila)) yield return null;
+            if (filasMuertas.Contains(fila)) yield break;
             trampasActivas.Remove(activo);
 
             if (retrasoRespawn > 0f) yield return new WaitForSeconds(retrasoRespawn);
+            if (filasMuertas.Contains(fila)) yield break;
 
             Activar(siguiente);
             activo = siguiente;
