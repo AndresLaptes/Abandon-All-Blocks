@@ -27,7 +27,7 @@ MonoBehaviour:
   colorFondo: {r: 0.34509805, g: 0.22745098, b: 0.21960784, a: 1}
   fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   floorFall: 1
-  fallFloorVelocity: 3
+  fallFloorVelocity: 2.7
   paredesApiladas: 1
   requieredEnemiesToDoor: 0
   numHerejes: 2

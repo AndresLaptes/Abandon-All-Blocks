@@ -17,6 +17,7 @@ public class GridMovement : MonoBehaviour
     
     private bool isMoving = false;
     private bool isDead = false;
+    private Vector3 destinoActual;
     private bool isAttacking = false;
     private bool isDefending = false;
     private bool isHurt = false;
@@ -108,6 +109,8 @@ public class GridMovement : MonoBehaviour
     public bool IsAttacking() => isAttacking;
     public bool IsDefending() => isDefending;
     public bool IsMoving() => isMoving;
+    public Vector3 PosicionDestino() => isMoving ? destinoActual : transform.position;
+    public bool EstaApuntandoA(Vector3 celda) => isMoving && Mathf.Abs(destinoActual.x - celda.x) < 0.1f && Mathf.Abs(destinoActual.z - celda.z) < 0.1f;
     public float TiempoMovimiento => tiempoMovimiento;
 
     public void SetHurt(bool state) { isHurt = state; }
@@ -215,7 +218,8 @@ public class GridMovement : MonoBehaviour
             destino.x = Mathf.Round(destino.x / step_size) * step_size;
             destino.z = Mathf.Round(destino.z / step_size) * step_size;
             
-            if (levelManager != null && levelManager.EsPared(destino)) return; 
+            if (levelManager != null && levelManager.EsPared(destino)) return;
+            if (levelManager != null && levelManager.HayEstatuaEn(destino)) return;
 
             if (levelManager != null && levelManager.enemySpawner != null)
             {
@@ -334,6 +338,7 @@ public class GridMovement : MonoBehaviour
     private IEnumerator MoverSuavemente(Vector3 destino, float duracionReal)
     {
         isMoving = true;
+        destinoActual = destino;
         
         if (anim != null) 
         {

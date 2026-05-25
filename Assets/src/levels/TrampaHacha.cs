@@ -9,8 +9,8 @@ public class TrampaHacha : MonoBehaviour
     public float periodo = 1f;
     [Tooltip("Desfase inicial en segundos. Útil para evitar que hachas adyacentes oscilen sincronizadas.")]
     public float faseInicial = 0f;
-    [Tooltip("Eje de rotación local del balanceo. (0,0,1) = oscila en plano XY (de izquierda a derecha en mundo).")]
-    public Vector3 ejeRotacion = new Vector3(0f, 0f, 1f);
+    [Tooltip("Eje de rotación MUNDIAL del balanceo. (0,1,0) = barrido horizontal sobre eje vertical.")]
+    public Vector3 ejeRotacion = new Vector3(0f, 1f, 0f);
 
     [Header("Daño")]
     [Tooltip("Distancia (desde el eje del hacha hasta el filo) usada para detectar contacto con el player.")]
@@ -29,7 +29,7 @@ public class TrampaHacha : MonoBehaviour
         player = jugador;
         if (player != null) playerHealth = player.GetComponent<PlayerHealth>();
         enemySpawner = FindObjectOfType<EnemySpawner>();
-        rotacionBase = transform.localRotation;
+        rotacionBase = transform.rotation;
         inicializada = true;
     }
 
@@ -39,7 +39,9 @@ public class TrampaHacha : MonoBehaviour
 
         float t = Time.time + faseInicial;
         float angulo = amplitudGrados * Mathf.Sin(2f * Mathf.PI * t / periodo);
-        transform.localRotation = rotacionBase * Quaternion.AngleAxis(angulo, ejeRotacion);
+        // Eje tratado como vector MUNDIAL: la oscilación se aplica antes del rotacionBase,
+        // así el tilt local del prefab se mantiene y el barrido sucede en mundo.
+        transform.rotation = Quaternion.AngleAxis(angulo, ejeRotacion) * rotacionBase;
 
         if (playerHealth != null && player != null && PlayerEnContacto())
         {

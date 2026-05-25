@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d7d2164078cda946854241aac85c16d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amplitudGrados: 15
+  amplitudGrados: 50
   periodo: 2
   faseInicial: 0
   ejeRotacion: {x: 0, y: 0, z: 1}
