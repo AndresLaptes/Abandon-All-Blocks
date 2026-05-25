@@ -32,6 +32,10 @@ public class AudioManager : MonoBehaviour
     public AudioClip sfxEnemigoAtaque;
     public AudioClip sfxEnemigoMuerte;
 
+    [Header("Efectos Boss")]
+    public AudioClip sfxDanoBoss;
+    public AudioClip sfxMuerteBoss;
+
     void Awake()
     {
         if (instance == null)

@@ -18,6 +18,12 @@ public class EnemyController : MonoBehaviour
     [Tooltip("Pon aquí el prefab del charco. Solo el demonio de brea debería tenerlo.")]
     public GameObject prefabRastroBrea; 
 
+    [Header("Caída al vacío")]
+    [Tooltip("Velocidad de caída cuando se queda sin suelo debajo.")]
+    public float velocidadCaida = 5f;
+    [Tooltip("Y bajo el cual al caer se dispara la muerte normal del enemigo.")]
+    public float yMuerteCaida = -5f;
+
     private float blocSize;
     private LevelManager levelManager;
     private Transform player;
@@ -26,6 +32,7 @@ public class EnemyController : MonoBehaviour
     private bool isMoving = false;
     private bool isAttacking = false;
     private bool isDead = false;
+    private bool isFalling = false;
     
     private Animator anim;
 
@@ -42,6 +49,36 @@ public class EnemyController : MonoBehaviour
         if (anim != null) anim.applyRootMotion = false;
 
         StartCoroutine(RutinaDeIA());
+    }
+
+    void Update()
+    {
+        if (isDead) return;
+
+        if (!isFalling && !isMoving && !isAttacking && levelManager != null && blocSize > 0f)
+        {
+            Vector3 celdaAlineada = new Vector3(
+                Mathf.Round(transform.position.x / blocSize) * blocSize,
+                transform.position.y,
+                Mathf.Round(transform.position.z / blocSize) * blocSize
+            );
+            if (!levelManager.ExisteSueloEn(celdaAlineada))
+            {
+                isFalling = true;
+                StopAllCoroutines();
+                if (anim != null) anim.SetBool("Caminando", false);
+            }
+        }
+
+        if (isFalling)
+        {
+            transform.Translate(Vector3.down * velocidadCaida * Time.deltaTime, Space.World);
+            if (transform.position.y < yMuerteCaida)
+            {
+                isFalling = false;
+                RecibirDano();
+            }
+        }
     }
 
     public void RecibirDano()
