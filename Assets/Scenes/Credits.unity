@@ -1613,7 +1613,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contenedorTexto: {fileID: 1869984945}
-  velocidadScroll: 80
+  velocidadScroll: 30
   puntoFinalY: 1200
   botonVolver: {fileID: 1116561184}
   escenaMenu: MenuPrincipal
