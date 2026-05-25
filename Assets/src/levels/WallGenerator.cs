@@ -31,6 +31,13 @@ public class WallGenerator : MonoBehaviour
     public float antorchaOffsetInterior = 0f;
     public Vector3 antorchaEscala = new Vector3(3f, 3f, 3f);
 
+    [Header("Decoración - Calavera sobre puerta")]
+    public GameObject calaveraPrefab;
+    public Vector3 calaveraEscala = new Vector3(0.5f, 0.5f, 0.5f);
+    [Tooltip("Offset en UNIDADES DE PARED (Y = nº de filas de pared encima del marco). 0.5 = media pared más arriba.")]
+    public Vector3 calaveraOffset = new Vector3(0f, 0.5f, 0f);
+    public Vector3 calaveraRotacionEuler = new Vector3(0f, 180f, 0f);
+
     [Header("Fade de paredes")]
     [Tooltip("World Y por encima de cual la pared se ve con textura completa.")]
     public float fadeTopY = 1f;
@@ -70,6 +77,8 @@ public class WallGenerator : MonoBehaviour
         puerta = Resources.Load<GameObject>($"{nombreCarpeta}/puerta");
         
         antorchaPrefab = Resources.Load<GameObject>($"{nombreCarpeta}/antorcha");
+
+        if (calaveraPrefab == null) calaveraPrefab = Resources.Load<GameObject>("Objects/calavera");
 
         fadeMatActual = Resources.Load<Material>($"{nombreCarpeta}/Wall1_FadeDown");
         antorchaMatActual = Resources.Load<Material>($"{nombreCarpeta}/mat_antorcha")
@@ -153,6 +162,19 @@ public class WallGenerator : MonoBehaviour
         float yArriba = floorTopY + (1f + pivotYAdjust) * nativeSize.y;
         GameObject arriba = Instantiate(puertaArriba, new Vector3(xPos, yArriba, zPos), rotFrontal, doorRoot.transform);
         arriba.transform.localScale = scale;
+
+        if (calaveraPrefab != null)
+        {
+            Vector3 offsetMundo = new Vector3(
+                calaveraOffset.x * blocSize,
+                calaveraOffset.y * nativeSize.y,
+                calaveraOffset.z * blocSize);
+            Vector3 calaveraPos = new Vector3(xPos, yArriba + nativeSize.y * 0.5f, zPos) + offsetMundo;
+            GameObject cal = Instantiate(calaveraPrefab, calaveraPos, Quaternion.Euler(calaveraRotacionEuler), doorRoot.transform);
+            cal.transform.position = calaveraPos;
+            cal.transform.localScale = calaveraEscala;
+            Debug.Log($"Calavera spawneada: world pos = {calaveraPos}, offset campo = {calaveraOffset}, nativeSize.y = {nativeSize.y}, blocSize = {blocSize}");
+        }
         GameObject panel = null;
         GameObject pivote = null;
         if (puerta != null)

@@ -182,15 +182,18 @@ public class EnemySpawner : MonoBehaviour
         {
             Vector3 posicionElegida = Vector3.zero;
             bool posicionValida = false;
+            bool esBoss = (prefab == prefabBoss);
+            // El boss no spawnea en la columna pegada a la pared izquierda (grid x = 0 → mundo x = -2*blocSize).
+            float minX = esBoss ? -2f * blocSize + 0.01f : float.NegativeInfinity;
 
-            posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, blocSize, out posicionElegida);
-            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, blocSize, out posicionElegida);
-            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, blocSize, out posicionElegida);
+            posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, blocSize, minX, out posicionElegida);
+            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, blocSize, minX, out posicionElegida);
+            if (!posicionValida) posicionValida = IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, blocSize, minX, out posicionElegida);
             if (!posicionValida)
             {
-                posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, 0f, out posicionElegida) ||
-                                 IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, 0f, out posicionElegida) ||
-                                 IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, 0f, out posicionElegida);
+                posicionValida = IntentarBuscarPosicion(celdasLejanas, posicionesOcupadas, 0f, minX, out posicionElegida) ||
+                                 IntentarBuscarPosicion(celdasMedias, posicionesOcupadas, 0f, minX, out posicionElegida) ||
+                                 IntentarBuscarPosicion(celdasCercanas, posicionesOcupadas, 0f, minX, out posicionElegida);
             }
 
             if (posicionValida)
@@ -232,11 +235,13 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    private bool IntentarBuscarPosicion(List<Vector3> celdasDisponibles, List<Vector3> ocupadas, float tamañoBloque, out Vector3 elegida)
+    private bool IntentarBuscarPosicion(List<Vector3> celdasDisponibles, List<Vector3> ocupadas, float tamañoBloque, float minX, out Vector3 elegida)
     {
         elegida = Vector3.zero;
         foreach (Vector3 celda in celdasDisponibles)
         {
+            if (celda.x < minX) continue;
+
             bool demasiadoCerca = false;
             foreach (Vector3 ocupada in ocupadas)
             {

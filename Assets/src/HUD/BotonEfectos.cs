@@ -45,14 +45,14 @@ public class BotonEfectos : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         escalaObjetivo = escalaOriginal * escalaHover;
         colorObjetivo = colorHover;
-        AudioManager.instance.PlaySFX(AudioManager.instance.sfxBotonHover);
+        if (AudioManager.instance != null) AudioManager.instance.PlaySFX(AudioManager.instance.sfxBotonHover);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         escalaObjetivo = escalaOriginal;
         colorObjetivo = colorNormal;
-        AudioManager.instance.PlaySFX(AudioManager.instance.sfxBotonClick);
+        if (AudioManager.instance != null) AudioManager.instance.PlaySFX(AudioManager.instance.sfxBotonClick);
     }
 
     public void OnPointerDown(PointerEventData eventData)

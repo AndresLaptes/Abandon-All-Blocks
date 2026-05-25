@@ -78,6 +78,26 @@ public class BossController : MonoBehaviour
     public float brazoAmplitud = 25f;
     public float cabezaAmplitud = 8f;
 
+    [Header("Ataque - animación brazos")]
+    [Tooltip("Grados sumados al Euler de la pose A durante la anticipación (brazos arriba). Positivo = mismo sentido que la apose.")]
+    public float ataqueAnguloAnticipacion = 90f;
+    [Tooltip("Grados sumados al Euler de la pose A en el impacto (brazos golpeando, sentido opuesto al de levantar).")]
+    public float ataqueAnguloImpacto = -100f;
+    [Tooltip("Máscara Vector3 que indica sobre qué componente Euler (X/Y/Z) del brazo izq se aplica el ángulo de ataque. (0,0,1) = mismo eje que la apose Z.")]
+    public Vector3 ataqueEjeBrazoIzq = new Vector3(0f, 0f, 1f);
+    [Tooltip("Máscara del brazo der. Suele ser simétrica (signo opuesto al izq) si la apose también lo es.")]
+    public Vector3 ataqueEjeBrazoDer = new Vector3(0f, 0f, -1f);
+
+    [Header("Pose A de brazos (offset base)")]
+    [Tooltip("Rotación Euler local base del brazo izquierdo en reposo. El swing se aplica encima.")]
+    public Vector3 brazoIzqAposeEuler = new Vector3(0f, 0f, 35f);
+    [Tooltip("Rotación Euler local base del brazo derecho en reposo. El swing se aplica encima.")]
+    public Vector3 brazoDerAposeEuler = new Vector3(0f, 0f, -35f);
+    [Tooltip("Desplazamiento local del pivote del brazo izq respecto a su posición original (para despegarlo del cuerpo).")]
+    public Vector3 brazoIzqOffsetPos = Vector3.zero;
+    [Tooltip("Desplazamiento local del pivote del brazo der respecto a su posición original.")]
+    public Vector3 brazoDerOffsetPos = Vector3.zero;
+
     [Header("Cola")]
     [Tooltip("Frecuencia del balanceo lateral de la cola (ciclos por segundo).")]
     public float colaFrecuencia = 1.2f;
@@ -88,6 +108,19 @@ public class BossController : MonoBehaviour
 
     private float bodyBaseY = 0f;
     private bool bodyBaseCacheada = false;
+
+    private Vector3 brazoIzqBasePos;
+    private Vector3 brazoDerBasePos;
+    private bool brazosBaseCacheados = false;
+
+    private float attackArmAngle = 0f;
+
+    [Header("Caída al vacío")]
+    [Tooltip("Velocidad de caída cuando se queda sin suelo debajo.")]
+    public float velocidadCaida = 5f;
+    [Tooltip("Y bajo el cual al caer se dispara la muerte normal del boss.")]
+    public float yMuerteCaida = -5f;
+    private bool isFalling = false;
 
     private float blocSize;
     private LevelManager levelManager;
@@ -130,6 +163,43 @@ public class BossController : MonoBehaviour
         StartCoroutine(RutinaDeIA());
     }
 
+    void Update()
+    {
+        if (isDead) return;
+
+        if (!isFalling && !isMoving && !isAttacking && levelManager != null && blocSize > 0f)
+        {
+            Vector3 celdaAlineada = new Vector3(
+                Mathf.Round(transform.position.x / blocSize) * blocSize,
+                transform.position.y,
+                Mathf.Round(transform.position.z / blocSize) * blocSize
+            );
+            if (!levelManager.ExisteSueloEn(celdaAlineada))
+            {
+                isFalling = true;
+                StopAllCoroutines();
+            }
+        }
+
+        if (isFalling)
+        {
+            transform.Translate(Vector3.down * velocidadCaida * Time.deltaTime, Space.World);
+            if (transform.position.y < yMuerteCaida)
+            {
+                isFalling = false;
+                ForzarMuerte();
+            }
+        }
+    }
+
+    private void ForzarMuerte()
+    {
+        if (isDead) return;
+        isInvulnerable = false;
+        vidasActuales = 0;
+        Morir();
+    }
+
     void LateUpdate()
     {
         AnimarPiezas();
@@ -159,6 +229,18 @@ public class BossController : MonoBehaviour
             bodyBaseCacheada = true;
         }
 
+        if (!brazosBaseCacheados)
+        {
+            if (brazoIzqPivot != null) brazoIzqBasePos = brazoIzqPivot.localPosition;
+            if (brazoDerPivot != null) brazoDerBasePos = brazoDerPivot.localPosition;
+            brazosBaseCacheados = true;
+        }
+
+        if (brazoIzqPivot != null)
+            brazoIzqPivot.localPosition = brazoIzqBasePos + OffsetEnLocal(brazoIzqPivot, brazoIzqOffsetPos);
+        if (brazoDerPivot != null)
+            brazoDerPivot.localPosition = brazoDerBasePos + OffsetEnLocal(brazoDerPivot, brazoDerOffsetPos);
+
         if (isMoving)
         {
             float walkT = Time.time * Mathf.PI * 2f * walkFrecuencia;
@@ -175,10 +257,10 @@ public class BossController : MonoBehaviour
             if (piernaIzqPivot != null) piernaIzqPivot.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
             if (piernaDerPivot != null) piernaDerPivot.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
 
-            // Brazos: opuestos a la pierna del mismo lado (caminar natural).
+            // Brazos: opuestos a la pierna del mismo lado (caminar natural) + pose A base.
             float armSwing = Mathf.Sin(walkT) * brazoAmplitud;
-            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Euler(-armSwing, 0f, 0f);
-            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Euler(armSwing, 0f, 0f);
+            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Euler(brazoIzqAposeEuler) * Quaternion.Euler(-armSwing, 0f, 0f);
+            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Euler(brazoDerAposeEuler) * Quaternion.Euler(armSwing, 0f, 0f);
 
             if (head != null)
             {
@@ -192,8 +274,8 @@ public class BossController : MonoBehaviour
             float k = Time.deltaTime * 5f;
             if (piernaIzqPivot != null) piernaIzqPivot.localRotation = Quaternion.Slerp(piernaIzqPivot.localRotation, Quaternion.identity, k);
             if (piernaDerPivot != null) piernaDerPivot.localRotation = Quaternion.Slerp(piernaDerPivot.localRotation, Quaternion.identity, k);
-            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Slerp(brazoIzqPivot.localRotation, Quaternion.identity, k);
-            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Slerp(brazoDerPivot.localRotation, Quaternion.identity, k);
+            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Slerp(brazoIzqPivot.localRotation, Quaternion.Euler(brazoIzqAposeEuler), k);
+            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Slerp(brazoDerPivot.localRotation, Quaternion.Euler(brazoDerAposeEuler), k);
             if (head != null) head.localRotation = Quaternion.Slerp(head.localRotation, Quaternion.identity, k);
             if (body != null && bodyBaseCacheada)
             {
@@ -202,6 +284,28 @@ public class BossController : MonoBehaviour
                 body.localPosition = bp;
             }
         }
+
+        // Atacando: el ángulo de ataque se suma directamente al Euler de la apose en la componente indicada por el eje-máscara.
+        if (isAttacking)
+        {
+            Vector3 izqEuler = brazoIzqAposeEuler + ataqueEjeBrazoIzq * attackArmAngle;
+            Vector3 derEuler = brazoDerAposeEuler + ataqueEjeBrazoDer * attackArmAngle;
+            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Euler(izqEuler);
+            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Euler(derEuler);
+        }
+    }
+
+    // Convierte un offset "en mundo" a unidades de localPosition del pivot indicado, dividiendo por la escala del padre.
+    private Vector3 OffsetEnLocal(Transform t, Vector3 offsetMundo)
+    {
+        Transform p = t.parent;
+        if (p == null) return offsetMundo;
+        Vector3 s = p.lossyScale;
+        return new Vector3(
+            s.x != 0f ? offsetMundo.x / s.x : 0f,
+            s.y != 0f ? offsetMundo.y / s.y : 0f,
+            s.z != 0f ? offsetMundo.z / s.z : 0f
+        );
     }
 
     private void OrientarHacia(Vector3 direccion)
@@ -236,6 +340,13 @@ public class BossController : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Damaged");
+            if (AudioManager.instance != null)
+            {
+                AudioClip clip = AudioManager.instance.sfxDanoBoss != null
+                    ? AudioManager.instance.sfxDanoBoss
+                    : AudioManager.instance.sfxRecibirDano;
+                AudioManager.instance.PlaySFX(clip);
+            }
             StartCoroutine(RutinaInvulnerabilidad());
         }
     }
@@ -275,6 +386,14 @@ public class BossController : MonoBehaviour
         isAttacking = false;
 
         if (anim != null) anim.SetTrigger("Morir");
+
+        if (AudioManager.instance != null)
+        {
+            AudioClip clip = AudioManager.instance.sfxMuerteBoss != null
+                ? AudioManager.instance.sfxMuerteBoss
+                : AudioManager.instance.sfxEnemigoMuerte;
+            AudioManager.instance.PlaySFX(clip);
+        }
 
         StartCoroutine(RutinaMuerte());
     }
@@ -342,6 +461,9 @@ public class BossController : MonoBehaviour
         isAttacking = true;
         if (anim != null) anim.SetTrigger("Atacar");
 
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlaySFX(AudioManager.instance.sfxEnemigoAtaque);
+
         Vector3 posInicial = new Vector3(
             Mathf.Round(transform.position.x / blocSize) * blocSize,
             transform.position.y,
@@ -354,11 +476,14 @@ public class BossController : MonoBehaviour
 
         Vector3 posRetroceso = posInicial - (direccionAtaque * distanciaRetroceso);
         float t = 0;
+        float anguloBrazoInicio = attackArmAngle;
         while (t < tiempoAnticipacion)
         {
             if (isDead) yield break;
             t += Time.deltaTime;
-            transform.position = Vector3.Lerp(posInicial, posRetroceso, t / tiempoAnticipacion);
+            float k = t / tiempoAnticipacion;
+            transform.position = Vector3.Lerp(posInicial, posRetroceso, k);
+            attackArmAngle = Mathf.Lerp(anguloBrazoInicio, ataqueAnguloAnticipacion, k);
             yield return null;
         }
 
@@ -368,7 +493,9 @@ public class BossController : MonoBehaviour
         {
             if (isDead) yield break;
             t += Time.deltaTime;
-            transform.position = Vector3.Lerp(posRetroceso, posImpacto, t / tiempoDash);
+            float k = t / tiempoDash;
+            transform.position = Vector3.Lerp(posRetroceso, posImpacto, k);
+            attackArmAngle = Mathf.Lerp(ataqueAnguloAnticipacion, ataqueAnguloImpacto, k);
             if (player != null) OrientarHacia(player.position - transform.position);
             yield return null;
         }
@@ -390,11 +517,14 @@ public class BossController : MonoBehaviour
         {
             if (isDead) yield break;
             t += Time.deltaTime;
-            transform.position = Vector3.Lerp(posImpacto, posInicial, t / tiempoRecuperacion);
+            float k = t / tiempoRecuperacion;
+            transform.position = Vector3.Lerp(posImpacto, posInicial, k);
+            attackArmAngle = Mathf.Lerp(ataqueAnguloImpacto, 0f, k);
             yield return null;
         }
 
         transform.position = posInicial;
+        attackArmAngle = 0f;
         isAttacking = false;
     }
 

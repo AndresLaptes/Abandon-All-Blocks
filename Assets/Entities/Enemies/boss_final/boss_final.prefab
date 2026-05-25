@@ -171,6 +171,14 @@ MonoBehaviour:
   piernaAmplitud: 15
   brazoAmplitud: 25
   cabezaAmplitud: 5
+  ataqueAnguloAnticipacion: 120
+  ataqueAnguloImpacto: -60
+  ataqueEjeBrazoIzq: {x: 1, y: 0, z: 0}
+  ataqueEjeBrazoDer: {x: 1, y: 0, z: 0}
+  brazoIzqAposeEuler: {x: 0, y: 0, z: -50}
+  brazoDerAposeEuler: {x: 0, y: 0, z: 50}
+  brazoIzqOffsetPos: {x: -0.4, y: 1.5, z: 0}
+  brazoDerOffsetPos: {x: 0.4, y: 1.5, z: 0}
   colaFrecuencia: 0.8
   colaAmplitud: 8
   colaEje: {x: 0, y: 1, z: 0}

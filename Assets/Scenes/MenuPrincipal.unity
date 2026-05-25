@@ -1999,6 +1999,8 @@ MonoBehaviour:
   sfxMuerte: {fileID: 8300000, guid: 27ac11244e8c2e64abf9b64bfcab2d34, type: 3}
   sfxEnemigoAtaque: {fileID: 8300000, guid: 805b1b9dc122f5741ba3dc384963e8dc, type: 3}
   sfxEnemigoMuerte: {fileID: 8300000, guid: f0d9918e094d1ce4a847c590cee3ec6a, type: 3}
+  sfxDanoBoss: {fileID: 8300000, guid: 7b3e1d9f4a2c5b8e9d1f3a6b5c8e2f4d, type: 3}
+  sfxMuerteBoss: {fileID: 8300000, guid: 09f64aa4dd5eeb3498f0f836895f98ab, type: 3}
 --- !u!4 &1731562898
 Transform:
   m_ObjectHideFlags: 0
