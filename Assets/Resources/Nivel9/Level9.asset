@@ -31,13 +31,14 @@ MonoBehaviour:
   - columnas: 0100000001000000010000000100000001000000
   colorFondo: {r: 0.371, g: 0.0588, b: 0.0367, a: 1}
   fadeTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  floorFall: 0
-  fallFloorVelocity: 1
+  floorFall: 1
+  fallFloorVelocity: 1.7
   paredesApiladas: 1
   requieredEnemiesToDoor: 0
   numHerejes: 2
   numGargolas: 2
   numBrea: 2
+  numBoss: 0
   numCoins: 7
   numTramps: 0
   allowedEnemyTypes: []

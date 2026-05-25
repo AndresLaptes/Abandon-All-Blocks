@@ -8,16 +8,25 @@ public class TrampaSpawner : MonoBehaviour
     public GameObject prefabTronco;
     public GameObject prefabPinchos;
     public GameObject prefabHacha;
+    public GameObject prefabPalo;
 
     [Header("Pinchos")]
     [Tooltip("Altura Y donde se coloca el prefab de pinchos (sobre el suelo del nivel).")]
     public float alturaSpawnPinchos = 1f;
 
     [Header("Hachas")]
-    [Tooltip("Altura Y donde se coloca el pivote del hacha (la cabeza del techo/mango).")]
+    [Tooltip("Altura Y donde se coloca el pivote del hacha (sobre el palo).")]
     public float alturaSpawnHachas = 4f;
     [Tooltip("Si true, da a cada hacha un faseInicial aleatorio para desincronizarlas.")]
     public bool desfasarHachas = true;
+    [Tooltip("Rotación inicial del hacha en grados Euler. (90,0,0) la tumba horizontal.")]
+    public Vector3 rotacionInicialHacha = new Vector3(90f, 0f, 0f);
+    [Tooltip("Escala uniforme aplicada al palo.")]
+    public Vector3 escalaPalo = new Vector3(0.25f, 0.25f, 0.25f);
+    [Tooltip("Altura Y donde se coloca el palo (debería estar a nivel de suelo).")]
+    public float alturaSpawnPalo = 0f;
+    [Tooltip("Offset dentro de la celda en unidades de celda (-0.5 a 0.5). (0.4,0.4) = esquina trasera derecha.")]
+    public Vector2 offsetHachaEnCelda = new Vector2(0.4f, 0.4f);
 
     [Header("Ciclo")]
     [Tooltip("Segundos entre que un tronco cae al vacío y aparece el siguiente en la misma fila.")]
@@ -87,6 +96,12 @@ public class TrampaSpawner : MonoBehaviour
             if (t == null) continue;
             if (Mathf.Abs(t.transform.position.z - posZ) < blocSizeCacheado * 0.5f) HacerCaer(t);
         }
+
+        foreach (GameObject h in hachasActivas)
+        {
+            if (h == null) continue;
+            if (Mathf.Abs(h.transform.position.z - posZ) < blocSizeCacheado * 0.5f) HacerCaer(h);
+        }
     }
 
     private void HacerCaer(GameObject obj)
@@ -150,8 +165,22 @@ public class TrampaSpawner : MonoBehaviour
                 if (datos.filas == null || datos.filas[z] == null) continue;
                 if (datos.filas[z].columnas[x] == 0) continue;
 
-                Vector3 pos = new Vector3((x - 2) * blocSize, alturaSpawnHachas, z * blocSize);
-                GameObject inst = Instantiate(prefabHacha, pos, Quaternion.identity, transform);
+                float xPos = (x - 2) * blocSize + offsetHachaEnCelda.x * blocSize;
+                float zPos = z * blocSize + offsetHachaEnCelda.y * blocSize;
+
+                // Palo vertical en el suelo de la celda.
+                if (prefabPalo != null)
+                {
+                    Vector3 posPalo = new Vector3(xPos, alturaSpawnPalo, zPos);
+                    GameObject palo = Instantiate(prefabPalo, posPalo, Quaternion.identity, transform);
+                    palo.transform.localScale = escalaPalo;
+                    hachasActivas.Add(palo);
+                }
+
+                // Hacha encima, rotada para que quede tumbada (corta horizontal).
+                Vector3 posHacha = new Vector3(xPos, alturaSpawnHachas, zPos);
+                Quaternion rotHacha = Quaternion.Euler(rotacionInicialHacha);
+                GameObject inst = Instantiate(prefabHacha, posHacha, rotHacha, transform);
                 hachasActivas.Add(inst);
 
                 TrampaHacha th = inst.GetComponent<TrampaHacha>();

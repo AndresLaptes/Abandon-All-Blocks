@@ -20,6 +20,26 @@ public class EnemySpawner : MonoBehaviour
         foreach (GameObject e in enemigosActivos) if (e != null) Destroy(e);
         enemigosActivos.Clear();
     }
+
+    // True si queda al menos un enemigo (cualquier tipo, incluido boss) vivo y no destruido.
+    public bool HayEnemigosVivos()
+    {
+        foreach (GameObject e in enemigosActivos)
+        {
+            if (e == null) continue;
+
+            BossController boss = e.GetComponent<BossController>();
+            if (boss != null)
+            {
+                if (!boss.IsDead()) return true;
+                continue;
+            }
+
+            EnemyController ec = e.GetComponent<EnemyController>();
+            if (ec != null && !ec.IsDead()) return true;
+        }
+        return false;
+    }
     
     // Función nueva: Devuelve el enemigo exacto en una casilla
     public EnemyController ObtenerEnemigoEn(Vector3 posDestino)
@@ -43,7 +63,9 @@ public class EnemySpawner : MonoBehaviour
     public int DaniarEnemigosEnArea(Vector3 centro, float radio)
     {
         int golpeados = 0;
-        foreach (GameObject e in enemigosActivos)
+        // Snapshot porque RecibirDano modifica enemigosActivos.
+        List<GameObject> snapshot = new List<GameObject>(enemigosActivos);
+        foreach (GameObject e in snapshot)
         {
             if (e == null) continue;
             if (e.GetComponent<BossController>() != null) continue;
@@ -120,10 +142,20 @@ public class EnemySpawner : MonoBehaviour
         {
             for (int x = 0; x < 5; x++)
             {
-                if (datos.filas[z].columnas[x] == 1)
-                {
-                    todasLasCeldas.Add(new Vector3((x - 2) * blocSize, 0f, z * blocSize));
-                }
+                if (datos.filas[z].columnas[x] != 1) continue;
+                if (datos.gridPinchos != null && z < datos.gridPinchos.Length
+                    && datos.gridPinchos[z] != null
+                    && datos.gridPinchos[z].columnas[x] == 1) continue;
+                if (datos.gridHachas != null && z < datos.gridHachas.Length
+                    && datos.gridHachas[z] != null
+                    && datos.gridHachas[z].columnas[x] == 1) continue;
+
+                if (datos.filasTrampaTronco != null && System.Array.IndexOf(datos.filasTrampaTronco, z) >= 0) continue;
+
+                Vector3 celdaPos = new Vector3((x - 2) * blocSize, 0f, z * blocSize);
+                if (manager != null && manager.HayEstatuaEn(celdaPos)) continue;
+
+                todasLasCeldas.Add(celdaPos);
             }
         }
 

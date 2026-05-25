@@ -66,13 +66,27 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator RutinaMuerte()
     {
-        yield return new WaitForSeconds(0.8f);
+        // Fase 1: caída de espaldas (rotación en X). El "atrás" del enemigo es -forward.
+        Quaternion rotInicial = transform.rotation;
+        Quaternion rotCaido = rotInicial * Quaternion.Euler(-80f, 0f, 0f);
+        float duracionCaida = 0.4f;
+        float t = 0f;
+        while (t < duracionCaida)
+        {
+            t += Time.deltaTime;
+            transform.rotation = Quaternion.Slerp(rotInicial, rotCaido, t / duracionCaida);
+            yield return null;
+        }
+        transform.rotation = rotCaido;
 
-        float t = 0;
+        // Fase 2: pequeña pausa en el suelo.
+        yield return new WaitForSeconds(0.4f);
+
+        // Fase 3: hundimiento.
         float duracionHundimiento = 0.6f;
         Vector3 posOriginal = transform.position;
         Vector3 posFinal = posOriginal + Vector3.down * (blocSize * 1.5f);
-
+        t = 0f;
         while (t < duracionHundimiento)
         {
             t += Time.deltaTime;
@@ -198,8 +212,11 @@ public class EnemyController : MonoBehaviour
             int costoFloodField = levelManager.ObtenerCostoFloodField(destinoPrueba);
             if (costoFloodField == 255) continue;
             if (spawner.HayEnemigoEn(destinoPrueba, this.gameObject)) continue;
-            
+
             if (Mathf.Abs(player.position.x - destinoPrueba.x) < 0.1f && Mathf.Abs(player.position.z - destinoPrueba.z) < 0.1f) continue;
+
+            GridMovement playerMov = player.GetComponent<GridMovement>();
+            if (playerMov != null && playerMov.EstaApuntandoA(destinoPrueba)) continue;
             
             float penalizacionPorApelotonamiento = 0f;
             foreach (GameObject aliado in spawner.enemigosActivos)

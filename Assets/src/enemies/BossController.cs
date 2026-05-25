@@ -46,6 +46,49 @@ public class BossController : MonoBehaviour
 
     private Renderer[] renderersParpadeo;
 
+    [Header("Animación procedural - referencias")]
+    [Tooltip("Torso central (Transform que se mueve arriba/abajo con el bob al andar).")]
+    public Transform body;
+    public Transform head;
+    public Transform alaIzqPivot;
+    public Transform alaDerPivot;
+    public Transform piernaIzqPivot;
+    public Transform piernaDerPivot;
+    public Transform brazoIzqPivot;
+    public Transform brazoDerPivot;
+    public Transform colaPivot;
+
+    [Header("Aleteo continuo de alas")]
+    [Tooltip("Frecuencia del aleteo (ciclos por segundo).")]
+    public float aleteoFrecuencia = 1.5f;
+    [Tooltip("Amplitud del aleteo en grados.")]
+    public float aleteoAmplitud = 25f;
+    [Tooltip("Eje local del ala izq sobre el que rota al aletear.")]
+    public Vector3 ejeAleteoIzq = new Vector3(0f, 0f, 1f);
+    [Tooltip("Eje local del ala der (típicamente espejado al izq).")]
+    public Vector3 ejeAleteoDer = new Vector3(0f, 0f, -1f);
+
+    [Header("Bob del cuerpo al moverse")]
+    public float bobFrecuencia = 4f;
+    public float bobAmplitud = 0.15f;
+
+    [Header("Caminar (piernas + brazos + cabeza)")]
+    public float walkFrecuencia = 6f;
+    public float piernaAmplitud = 30f;
+    public float brazoAmplitud = 25f;
+    public float cabezaAmplitud = 8f;
+
+    [Header("Cola")]
+    [Tooltip("Frecuencia del balanceo lateral de la cola (ciclos por segundo).")]
+    public float colaFrecuencia = 1.2f;
+    [Tooltip("Amplitud del balanceo de la cola en grados.")]
+    public float colaAmplitud = 15f;
+    [Tooltip("Eje sobre el que rota la cola (típicamente Y para balanceo lateral).")]
+    public Vector3 colaEje = new Vector3(0f, 1f, 0f);
+
+    private float bodyBaseY = 0f;
+    private bool bodyBaseCacheada = false;
+
     private float blocSize;
     private LevelManager levelManager;
     private Transform player;
@@ -89,9 +132,76 @@ public class BossController : MonoBehaviour
 
     void LateUpdate()
     {
+        AnimarPiezas();
+
         if (!aplicarRotacionEnLateUpdate) return;
         Vector3 e = transform.rotation.eulerAngles;
         transform.rotation = Quaternion.Euler(e.x, desiredYRotation, e.z);
+    }
+
+    private void AnimarPiezas()
+    {
+        if (isDead) return;
+
+        // Aleteo continuo de alas, esté quieto o moviéndose.
+        float aleteo = Mathf.Sin(Time.time * Mathf.PI * 2f * aleteoFrecuencia) * aleteoAmplitud;
+        if (alaIzqPivot != null) alaIzqPivot.localRotation = Quaternion.AngleAxis(aleteo, ejeAleteoIzq);
+        if (alaDerPivot != null) alaDerPivot.localRotation = Quaternion.AngleAxis(aleteo, ejeAleteoDer);
+
+        // Cola: balanceo lateral continuo.
+        float colaSway = Mathf.Sin(Time.time * Mathf.PI * 2f * colaFrecuencia) * colaAmplitud;
+        if (colaPivot != null) colaPivot.localRotation = Quaternion.AngleAxis(colaSway, colaEje);
+
+        // Bob + paso + cabeza solo si se está moviendo.
+        if (body != null && !bodyBaseCacheada)
+        {
+            bodyBaseY = body.localPosition.y;
+            bodyBaseCacheada = true;
+        }
+
+        if (isMoving)
+        {
+            float walkT = Time.time * Mathf.PI * 2f * walkFrecuencia;
+
+            if (body != null)
+            {
+                float bobOffset = Mathf.Sin(Time.time * Mathf.PI * 2f * bobFrecuencia) * bobAmplitud;
+                Vector3 bp = body.localPosition;
+                bp.y = bodyBaseY + bobOffset;
+                body.localPosition = bp;
+            }
+
+            float legSwing = Mathf.Sin(walkT) * piernaAmplitud;
+            if (piernaIzqPivot != null) piernaIzqPivot.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
+            if (piernaDerPivot != null) piernaDerPivot.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
+
+            // Brazos: opuestos a la pierna del mismo lado (caminar natural).
+            float armSwing = Mathf.Sin(walkT) * brazoAmplitud;
+            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Euler(-armSwing, 0f, 0f);
+            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Euler(armSwing, 0f, 0f);
+
+            if (head != null)
+            {
+                float headSway = Mathf.Sin(walkT * 0.5f) * cabezaAmplitud;
+                head.localRotation = Quaternion.Euler(0f, headSway, 0f);
+            }
+        }
+        else
+        {
+            // Reposo: extremidades y cabeza vuelven suavemente a neutro.
+            float k = Time.deltaTime * 5f;
+            if (piernaIzqPivot != null) piernaIzqPivot.localRotation = Quaternion.Slerp(piernaIzqPivot.localRotation, Quaternion.identity, k);
+            if (piernaDerPivot != null) piernaDerPivot.localRotation = Quaternion.Slerp(piernaDerPivot.localRotation, Quaternion.identity, k);
+            if (brazoIzqPivot != null) brazoIzqPivot.localRotation = Quaternion.Slerp(brazoIzqPivot.localRotation, Quaternion.identity, k);
+            if (brazoDerPivot != null) brazoDerPivot.localRotation = Quaternion.Slerp(brazoDerPivot.localRotation, Quaternion.identity, k);
+            if (head != null) head.localRotation = Quaternion.Slerp(head.localRotation, Quaternion.identity, k);
+            if (body != null && bodyBaseCacheada)
+            {
+                Vector3 bp = body.localPosition;
+                bp.y = Mathf.Lerp(bp.y, bodyBaseY, k);
+                body.localPosition = bp;
+            }
+        }
     }
 
     private void OrientarHacia(Vector3 direccion)
@@ -312,6 +422,9 @@ public class BossController : MonoBehaviour
             if (costoFloodField == 255) continue;
 
             if (Mathf.Abs(player.position.x - destinoPrueba.x) < 0.1f && Mathf.Abs(player.position.z - destinoPrueba.z) < 0.1f) continue;
+
+            GridMovement playerMov = player.GetComponent<GridMovement>();
+            if (playerMov != null && playerMov.EstaApuntandoA(destinoPrueba)) continue;
 
             if (costoFloodField < mejorPuntuacion)
             {

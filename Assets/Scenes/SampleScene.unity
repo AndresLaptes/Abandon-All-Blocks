@@ -17,7 +17,7 @@ RenderSettings:
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.01
+  m_FogDensity: 0.05
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -1488,6 +1488,7 @@ GameObject:
   - component: {fileID: 1079592816}
   - component: {fileID: 1079592815}
   - component: {fileID: 1079592817}
+  - component: {fileID: 1079592818}
   m_Layer: 0
   m_Name: floorGenerator
   m_TagString: Untagged
@@ -1512,10 +1513,18 @@ MonoBehaviour:
   player: {fileID: 1700040685}
   blocSize: 2.5
   offsetAlturaJugador: 1
-  nivelInicialParaProbar: 4
+  nivelInicialParaProbar: 1
   prefabMoneda: {fileID: 148711598779066864, guid: ca975475be2642b4e99ee61880d3d635,
     type: 3}
   offsetAlturaMonedas: 2.75
+  escalaEstatuas: {x: 2, y: 2, z: 2}
+  offsetEstatuaEnEsquina: 0
+  materialNiebla: {fileID: 2100000, guid: af9a507ffed5bfb449cccff898a40e86, type: 2}
+  tintaNiebla: {r: 1, g: 0.4, b: 0.3, a: 0.4}
+  numNubes: 50
+  escalaNubeBase: 2
+  variacionEscalaNube: 0.15
+  fraccionEnterradaNube: 1
   camara: {fileID: 330585548}
   wallGenerator: {fileID: 2001882478}
   enemySpawner: {fileID: 1449845798}
@@ -2907,9 +2916,15 @@ MonoBehaviour:
     type: 3}
   prefabHacha: {fileID: 4073024435231887436, guid: 89e31709ca74ce0418d472276b8bd895,
     type: 3}
+  prefabPalo: {fileID: 6332915519112335224, guid: ae5f53689d38d58479a68bf3b9cbcb2e,
+    type: 3}
   alturaSpawnPinchos: 2
-  alturaSpawnHachas: 6
+  alturaSpawnHachas: 4
   desfasarHachas: 1
+  rotacionInicialHacha: {x: 0, y: 0, z: -120}
+  escalaPalo: {x: 1, y: 1, z: 1}
+  alturaSpawnPalo: 2
+  offsetHachaEnCelda: {x: 0.4, y: 0}
   retrasoRespawn: 2
   retrasoInicial: 0.5
   offsetSpawnEnCeldas: 0.5
@@ -3819,6 +3834,26 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1700040695}
   m_SourcePrefab: {fileID: 100100000, guid: 57f0914e895d85342b9ac203365e43f4, type: 3}
+--- !u!114 &1079592818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1079592814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b07a8c9d3e1f4528a4d6b5e2f9c8d7a1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  escenaMenu: MenuPrincipal
+  textoBoton: MENU
+  tamanioFuente: 18
+  colorTexto: {r: 0, g: 0, b: 0, a: 1}
+  anchor: {x: 1, y: 1}
+  offsetDesdeEsquina: {x: -65, y: -70}
+  tamano: {x: 100, y: 36}
+  colorFondo: {r: 1, g: 1, b: 1, a: 0.5490196}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
