@@ -116,3 +116,6 @@ skills-lock.json
 
 # Backup local de configuración de niveles (no se commitea)
 NIVELES_BACKUP.md
+
+# Ejecutable / build de entrega (no se commitea)
+/[Ee]jecutable/

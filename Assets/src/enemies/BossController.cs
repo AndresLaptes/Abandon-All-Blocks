@@ -5,8 +5,12 @@ public class BossController : MonoBehaviour
 {
     [Header("Vida")]
     public int vidasMaximas = 5;
-    [Tooltip("Segundos en los que tras recibir un golpe el boss queda quieto, parpadea y no puede atacar ni recibir más daño.")]
-    public float duracionInvulnerabilidad = 1.8f;
+    [Tooltip("Segundos de retraso antes de reproducir el sonido de daño (para que cuadre con el golpe).")]
+    public float retrasoSonidoDano = 0.25f;
+    [Tooltip("Segundos en los que tras recibir un golpe el boss no puede recibir más daño (parpadea).")]
+    public float duracionInvulnerabilidad = 2.5f;
+    [Tooltip("Segundos en los que tras recibir un golpe el boss no puede atacar. Más corto que la invulnerabilidad: al acabar, el boss vuelve a atacar aunque siga inmune.")]
+    public float duracionBloqueoAtaque = 1.5f;
 
     [Header("Movimiento")]
     public float tiempoDeViajePorCasilla = 0.5f;
@@ -130,6 +134,7 @@ public class BossController : MonoBehaviour
     private bool isMoving = false;
     private bool isAttacking = false;
     private bool isInvulnerable = false;
+    private bool isBloqueadoAtaque = false;
     private bool isDead = false;
 
     private Animator anim;
@@ -340,14 +345,29 @@ public class BossController : MonoBehaviour
         else
         {
             if (anim != null) anim.SetTrigger("Damaged");
-            if (AudioManager.instance != null)
-            {
-                AudioClip clip = AudioManager.instance.sfxDanoBoss != null
-                    ? AudioManager.instance.sfxDanoBoss
-                    : AudioManager.instance.sfxRecibirDano;
-                AudioManager.instance.PlaySFX(clip);
-            }
+            StartCoroutine(RutinaSonidoDano());
             StartCoroutine(RutinaInvulnerabilidad());
+            StartCoroutine(RutinaBloqueoAtaque());
+        }
+    }
+
+    private IEnumerator RutinaBloqueoAtaque()
+    {
+        isBloqueadoAtaque = true;
+        yield return new WaitForSeconds(duracionBloqueoAtaque);
+        isBloqueadoAtaque = false;
+    }
+
+    private IEnumerator RutinaSonidoDano()
+    {
+        if (retrasoSonidoDano > 0f) yield return new WaitForSeconds(retrasoSonidoDano);
+        if (isDead) yield break;
+        if (AudioManager.instance != null)
+        {
+            AudioClip clip = AudioManager.instance.sfxDanoBoss != null
+                ? AudioManager.instance.sfxDanoBoss
+                : AudioManager.instance.sfxRecibirDano;
+            AudioManager.instance.PlaySFX(clip);
         }
     }
 
@@ -382,6 +402,7 @@ public class BossController : MonoBehaviour
         StopAllCoroutines();
         RestaurarVisibilidad();
         isInvulnerable = false;
+        isBloqueadoAtaque = false;
         isMoving = false;
         isAttacking = false;
 
@@ -434,7 +455,7 @@ public class BossController : MonoBehaviour
             float tiempoEspera = Random.Range(tiempoEsperaMinimo, tiempoEsperaMaximo);
             yield return new WaitForSeconds(tiempoEspera);
 
-            if (isMoving || isAttacking || isInvulnerable || player == null || isDead) continue;
+            if (isMoving || isAttacking || isBloqueadoAtaque || player == null || isDead) continue;
 
             Vector3 miPosPlana = new Vector3(transform.position.x, 0, transform.position.z);
             Vector3 playerPosPlana = new Vector3(player.position.x, 0, player.position.z);

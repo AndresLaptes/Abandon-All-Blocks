@@ -1573,8 +1573,8 @@ MonoBehaviour:
   escenaMenu: MenuPrincipal
   textoBoton: MENU
   tamanioFuente: 24
-  anchor: {x: 1, y: 1}
-  offsetDesdeEsquina: {x: -20, y: -170}
+  anchor: {x: 1, y: 0}
+  offsetDesdeEsquina: {x: -20, y: 35}
   tamano: {x: 140, y: 40}
   escala: {x: 1.2, y: 1.2}
   colorNormal: {r: 0, g: 0, b: 0, a: 1}
