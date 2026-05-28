@@ -59,6 +59,8 @@ public class CreditsController : MonoBehaviour
 
     public void CargarMenu()
     {
+        if (AudioManager.instance != null && AudioManager.instance.musicaFondo != null)
+            AudioManager.instance.CambiarMusica(AudioManager.instance.musicaFondo);
         SceneManager.LoadScene(escenaMenu);
     }
 }

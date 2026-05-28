@@ -43,6 +43,8 @@ public class GameOverManager : MonoBehaviour
 
     public void VolverAlMenu()
     {
-        SceneManager.LoadScene("MenuPrincipal"); 
+        if (AudioManager.instance != null && AudioManager.instance.musicaFondo != null)
+            AudioManager.instance.CambiarMusica(AudioManager.instance.musicaFondo);
+        SceneManager.LoadScene("MenuPrincipal");
     }
 }

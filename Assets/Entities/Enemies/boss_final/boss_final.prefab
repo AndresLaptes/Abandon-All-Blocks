@@ -138,7 +138,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vidasMaximas: 5
-  duracionInvulnerabilidad: 1.5
+  duracionInvulnerabilidad: 2.5
+  duracionBloqueoAtaque: 1.5
   tiempoDeViajePorCasilla: 0.5
   tiempoEsperaMinimo: 0.4
   tiempoEsperaMaximo: 1
